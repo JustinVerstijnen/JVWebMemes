@@ -8,7 +8,11 @@
   <script defer src="https://cloud.umami.is/script.js" data-website-id="0b9a2780-4e9b-4e14-93d9-97d0e64d6ccb"></script>
 </head>
 <body>
-  <header><h1>🔥 Mijn Concerten 🎸</h1><h2>Een inkijkje in mijn geplande en bezochtte concerten</h2></header>
+  <header>
+    <h1>🔥 Mijn Concerten 🎸</h1>
+    <h2>Een inkijkje in mijn geplande en bezochte concerten</h2>
+  </header>
+
   <main>
     <section id="upcoming">
       <h1>Komende concerten</h1>
@@ -16,13 +20,26 @@
       <div id="upcoming-list"></div>
     </section>
 
-    <section id="archive">
-      <h2 class="archive-toggle">
-        <span class="arrow">▼</span> Archief
+    <section id="overview-actions" class="overview-actions">
+      <h2 class="archive-toggle toggle-button">
+        <span class="archive-arrow arrow">▼</span> Archief
       </h2>
-      <div id="archive-list" class="collapsed"></div>
+
+      <h2 class="stats-toggle toggle-button stats-button">
+        <span class="stats-arrow arrow">▼</span> Statistieken
+      </h2>
+    </section>
+
+    <section id="archive">
+      <div id="archive-list" class="collapsible-panel"></div>
+    </section>
+
+    <section id="statistics">
+      <div id="stats-list" class="collapsible-panel"></div>
     </section>
   </main>
+
+  <script src="concerts-data.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
