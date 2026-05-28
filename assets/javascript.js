@@ -56,6 +56,13 @@ const items = [
     "icon": "🎤"
   },
   {
+    "title": "Cheap ram",
+    "description": "Simple tool to download more RAM for your computer.",
+    "url": "cheapram/index.html",
+    "image": "cheapram/cheapram.png",
+    "icon": "🎤"
+  },
+  {
     "title": "Sales Tool",
     "description": "A sales-themed meme tool.",
     "url": "salestool/index.html",
