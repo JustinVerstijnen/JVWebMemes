@@ -12,7 +12,6 @@
       --accent: #7cff6b;
       --accent-2: #58d5ff;
       --danger: #ff5f7a;
-      --warning: #ffd166;
       --cell: rgba(255, 255, 255, 0.09);
       --cell-border: rgba(255, 255, 255, 0.16);
       --shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
@@ -565,29 +564,6 @@
     .drag-preview.board-mode .drag-cell.on {
       border-radius: 10px;
     }
-    .rickroll-overlay {
-      position: fixed;
-      inset: 0;
-      display: none;
-      place-items: center;
-      padding: 24px;
-      background: rgba(0, 0, 0, 0.92);
-      z-index: 99999;
-      overflow: hidden;
-    }
-
-    .rickroll-overlay.show {
-      display: grid;
-    }
-
-    .rickroll-gif {
-      position: fixed;
-      inset: 0;
-      width: 100vw;
-      height: 100vh;
-      object-fit: cover;
-      z-index: 1;
-    }
 
     @keyframes ramWarp {
       0% {
@@ -617,19 +593,6 @@
       }
     }
 
-    .download-overlay.finalizing .download-card {
-      animation: ramWarp 900ms ease-in-out infinite alternate, glowPulse 700ms ease-in-out infinite;
-      border-color: rgba(124, 255, 107, 0.5);
-    }
-
-    .download-overlay.finalizing .progressbar span {
-      filter: brightness(1.4) saturate(1.8);
-    }
-
-
-
-
-
     .download-overlay {
       position: fixed;
       inset: 0;
@@ -643,6 +606,15 @@
 
     .download-overlay.show {
       display: grid;
+    }
+
+    .download-overlay.finalizing .download-card {
+      animation: ramWarp 900ms ease-in-out infinite alternate, glowPulse 700ms ease-in-out infinite;
+      border-color: rgba(124, 255, 107, 0.5);
+    }
+
+    .download-overlay.finalizing .progressbar span {
+      filter: brightness(1.4) saturate(1.8);
     }
 
     .download-card {
@@ -697,6 +669,29 @@
       overflow: hidden;
       border: 1px solid rgba(124, 255, 107, 0.16);
       white-space: pre-line;
+    }
+
+    .rickroll-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      place-items: center;
+      background: #000;
+      z-index: 99999;
+      overflow: hidden;
+    }
+
+    .rickroll-overlay.show {
+      display: grid;
+    }
+
+    .rickroll-gif {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+      z-index: 1;
     }
 
     footer {
@@ -829,7 +824,7 @@
           <div>
             <h2>Format the RAM bank</h2>
             <p>
-              This puzzle now has a known clean solution. The modules start in the correct orientation,
+              This puzzle has a known clean solution. The modules start in the correct orientation,
               so you can solve it without rotating anything. Rotating is still available for brave overclockers.
             </p>
           </div>
@@ -897,6 +892,7 @@
       <div class="terminal" id="terminal">&gt; checking motherboard vibes...</div>
     </div>
   </div>
+
   <div class="rickroll-overlay" id="rickrollOverlay" role="dialog" aria-modal="true" aria-label="RAM download complete">
     <img src="rickroll.gif" alt="Rickroll" class="rickroll-gif" />
     <audio id="rickrollAudio" loop>
@@ -904,10 +900,7 @@
     </audio>
   </div>
 
-
-
   <script>
-    const redirectUrl = "https://memes.justinverstijnen.nl/rickroll/";
     const boardSize = 8;
     const totalCells = boardSize * boardSize;
 
@@ -1467,6 +1460,7 @@
       );
       renderBoard();
     }
+
     function startRickroll() {
       downloadOverlay.classList.remove("show", "finalizing");
       rickrollOverlay.classList.add("show");
@@ -1501,8 +1495,7 @@
         if (progress >= 100) {
           window.clearInterval(interval);
           downloadText.textContent = "Download complete. Injecting RAM into your browser memory...";
-          terminal.textContent += "
-> success: definitely not a rickroll";
+          terminal.textContent += "\n> success: definitely not a rickroll";
           downloadOverlay.classList.add("finalizing");
           window.setTimeout(() => {
             startRickroll();
@@ -1510,7 +1503,6 @@
         }
       }, 260);
     }
-
 
     rotateButton.addEventListener("click", () => rotatePiece());
     hintButton.addEventListener("click", toggleHints);
