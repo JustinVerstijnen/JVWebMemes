@@ -440,6 +440,17 @@
       border: 1px dashed rgba(255, 255, 255, 0.08);
     }
 
+    .cell.solution-hint::after {
+      content: attr(data-hint);
+      display: grid;
+      place-items: center;
+      inset: 6px;
+      border: 1px dashed rgba(124, 255, 107, 0.22);
+      color: rgba(124, 255, 107, 0.58);
+      font-size: 12px;
+      font-weight: 900;
+    }
+
     .cell.preview-ok {
       background: rgba(124, 255, 107, 0.22);
       border-color: rgba(124, 255, 107, 0.78);
@@ -754,8 +765,8 @@
           <div>
             <h2>Format the RAM bank</h2>
             <p>
-              Drag the modules from the tray into the motherboard. The preview now snaps to the actual grid cells,
-              so what you see is what gets installed. A full board unlocks the totally legitimate RAM download.
+              This puzzle now has a known clean solution. The modules start in the correct orientation,
+              so you can solve it without rotating anything. Rotating is still available for brave overclockers.
             </p>
           </div>
           <div class="progress-box">
@@ -766,7 +777,7 @@
 
         <div class="piece-zone">
           <div class="piece-zone-top">
-            <span><b>RAM module tray</b> — drag from here, no scrolling marathon required.</span>
+            <span><b>RAM module tray</b> — no rotation required. Place roughly from left to right, top to bottom.</span>
             <span id="selectedLabel">Pick up a module</span>
           </div>
           <div class="pieces" id="pieces"></div>
@@ -787,17 +798,19 @@
               1. Drag a RAM module from the tray.<br />
               2. Move it over the board until the preview turns green.<br />
               3. Drop it to install the module.<br />
-              4. Press <b>R</b> while dragging to rotate. Double-click a module to rotate it before dragging.
+              4. You do <b>not</b> need to rotate anything for the intended solution.<br />
+              5. Stuck? Use the hint button. It is definitely not cheating, it is “assisted memory allocation”.
             </div>
 
             <div class="controls">
               <button type="button" id="rotateButton">Rotate selected module ↻</button>
+              <button type="button" class="ghost-button" id="hintButton">Show tiny hints</button>
               <button type="button" class="ghost-button" id="undoButton">Undo last module</button>
               <button type="button" class="ghost-button" id="resetButton">Reset RAM bank</button>
             </div>
 
             <div class="message" id="message">
-              Drag a module from the tray above. The ghost module will snap to the board cells, so the drop position is clear.
+              Drag modules from the tray above. The intended solution works without rotating any blocks.
             </div>
           </div>
         </div>
@@ -826,23 +839,34 @@
     const boardSize = 8;
     const totalCells = boardSize * boardSize;
 
+    const solutionMap = [
+      "AAAACCCB",
+      "EEFGCDDB",
+      "EEFGDDBB",
+      "HHFGGPPO",
+      "HIFLLPPO",
+      "HIILLMMO",
+      "JIKKMMNO",
+      "JJJKKNNN"
+    ];
+
     const pieces = [
-      { id: "p1", name: "RAM L-Clip", sub: "Clicks in eventually", cells: [[0,0],[0,1],[0,2],[1,0]] },
-      { id: "p2", name: "Dual Hook", sub: "For unnecessary speed", cells: [[0,1],[1,0],[1,1],[2,1]] },
-      { id: "p3", name: "Helpdesk T", sub: "Try rebooting it", cells: [[0,1],[1,0],[1,1],[1,2]] },
-      { id: "p4", name: "Straight Stick", sub: "Old-school DDR-ish", cells: [[0,0],[0,1],[0,2],[0,3]] },
-      { id: "p5", name: "Cache Block", sub: "Probably placebo", cells: [[0,0],[0,1],[1,0],[1,1]] },
-      { id: "p6", name: "Browser Z", sub: "Eats memory politely", cells: [[0,0],[0,1],[1,1],[1,2]] },
-      { id: "p7", name: "RGB S", sub: "Light equals speed", cells: [[0,1],[0,2],[1,0],[1,1]] },
-      { id: "p8", name: "Cloud L", sub: "Falls from the sky", cells: [[0,0],[1,0],[1,1],[1,2]] },
-      { id: "p9", name: "BIOS Brick", sub: "Do not flash at 5 PM", cells: [[0,0],[0,1],[1,0],[2,0]] },
-      { id: "p10", name: "Swap Stick", sub: "Your SSD is crying", cells: [[0,0],[1,0],[2,0],[3,0]] },
-      { id: "p11", name: "Thermal T", sub: "Cools the nonsense", cells: [[0,0],[0,1],[0,2],[1,1]] },
-      { id: "p12", name: "Parity Dot XL", sub: "Four feelings per bit", cells: [[0,0],[0,1],[1,0],[1,1]] },
-      { id: "p13", name: "Budget J", sub: "Fits with confidence", cells: [[0,2],[1,0],[1,1],[1,2]] },
-      { id: "p14", name: "Server S", sub: "Enterprise nonsense", cells: [[0,0],[0,1],[1,1],[1,2]] },
-      { id: "p15", name: "Final Z", sub: "Definitely important", cells: [[0,1],[0,2],[1,0],[1,1]] },
-      { id: "p16", name: "Tiny Square", sub: "Last-minute memory", cells: [[0,0],[0,1],[1,0],[1,1]] }
+      { id: "A", name: "A — Straight Stick", sub: "Top-left speed rail", cells: [[0,0],[0,1],[0,2],[0,3]] },
+      { id: "B", name: "B — Corner Stack", sub: "Right-side RAM cliff", cells: [[0,1],[1,1],[2,0],[2,1]] },
+      { id: "C", name: "C — Cloud L", sub: "Falls into row one", cells: [[0,0],[0,1],[0,2],[1,0]] },
+      { id: "D", name: "D — Browser S", sub: "Eats memory politely", cells: [[0,1],[0,2],[1,0],[1,1]] },
+      { id: "E", name: "E — Cache Block", sub: "Suspiciously square", cells: [[0,0],[0,1],[1,0],[1,1]] },
+      { id: "F", name: "F — Vertical Stick", sub: "Tiny RAM tower", cells: [[0,0],[1,0],[2,0],[3,0]] },
+      { id: "G", name: "G — BIOS L", sub: "Do not flash at 5 PM", cells: [[0,0],[1,0],[2,0],[2,1]] },
+      { id: "H", name: "H — Helpdesk Hook", sub: "Try rebooting it", cells: [[0,0],[0,1],[1,0],[2,0]] },
+      { id: "I", name: "I — Thermal T", sub: "Cools the nonsense", cells: [[0,0],[1,0],[1,1],[2,0]] },
+      { id: "J", name: "J — Budget J", sub: "Fits with confidence", cells: [[0,0],[1,0],[1,1],[1,2]] },
+      { id: "K", name: "K — Swap Z", sub: "Your SSD is crying", cells: [[0,0],[0,1],[1,1],[1,2]] },
+      { id: "L", name: "L — Parity Block", sub: "Four feelings per bit", cells: [[0,0],[0,1],[1,0],[1,1]] },
+      { id: "M", name: "M — Server S", sub: "Enterprise nonsense", cells: [[0,1],[0,2],[1,0],[1,1]] },
+      { id: "N", name: "N — Final T", sub: "Definitely important", cells: [[0,1],[1,0],[1,1],[1,2]] },
+      { id: "O", name: "O — RGB Stick", sub: "Light equals speed", cells: [[0,0],[1,0],[2,0],[3,0]] },
+      { id: "P", name: "P — Tiny Square", sub: "Last-minute memory", cells: [[0,0],[0,1],[1,0],[1,1]] }
     ];
 
     const board = document.getElementById("board");
@@ -851,6 +875,7 @@
     const selectedLabel = document.getElementById("selectedLabel");
     const message = document.getElementById("message");
     const rotateButton = document.getElementById("rotateButton");
+    const hintButton = document.getElementById("hintButton");
     const resetButton = document.getElementById("resetButton");
     const undoButton = document.getElementById("undoButton");
     const panicButton = document.getElementById("panicButton");
@@ -867,6 +892,7 @@
     let completed = false;
     let pointerState = null;
     let drag = null;
+    let hintsVisible = false;
 
     function createEmptyGrid() {
       return Array.from({ length: boardSize }, () => Array(boardSize).fill(null));
@@ -923,6 +949,11 @@
           cell.className = "cell";
           cell.dataset.row = String(row);
           cell.dataset.col = String(col);
+          cell.dataset.hint = solutionMap[row][col];
+
+          if (hintsVisible && !grid[row][col]) {
+            cell.classList.add("solution-hint");
+          }
 
           if (grid[row][col]) {
             cell.classList.add("filled");
@@ -987,6 +1018,10 @@
       if (completed || isUsed(pieceId) || event.button !== 0) return;
 
       event.preventDefault();
+
+      const newSelection = selectedPieceId !== pieceId;
+      selectedPieceId = pieceId;
+      if (newSelection) selectedRotation = 0;
 
       pointerState = {
         pointerId: event.pointerId,
@@ -1060,7 +1095,7 @@
       const piece = getPiece(state.pieceId);
       selectedPieceId = state.pieceId;
       selectedLabel.textContent = `${piece.name} in hand`;
-      setMessage(`Drag ${piece.name} over the board. Press R while dragging to rotate it.`);
+      setMessage(`Drag ${piece.name} over the board. The intended solution does not require rotation.`);
 
       state.source.classList.add("dragging-source");
 
@@ -1086,7 +1121,10 @@
     function selectPiece(id) {
       if (isUsed(id)) return;
 
+      const newSelection = selectedPieceId !== id;
       selectedPieceId = id;
+      if (newSelection) selectedRotation = 0;
+
       const piece = getPiece(id);
       selectedLabel.textContent = `${piece.name} selected`;
       setMessage(`Selected ${piece.name}. Drag it to the board or click a board cell to install it.`);
@@ -1103,7 +1141,7 @@
       selectedRotation = (selectedRotation + 1) % 4;
       const piece = getPiece(id);
       selectedLabel.textContent = `${piece.name} rotated`;
-      setMessage(`${piece.name} rotated. It now fits either better or worse. Very scientific.`);
+      setMessage(`${piece.name} rotated. Not required for the main solution, but very overclocked of you.`);
 
       if (drag && drag.pieceId === id) {
         updateDragPreview(drag.lastClientX, drag.lastClientY, true);
@@ -1346,6 +1384,16 @@
       renderPieces();
     }
 
+    function toggleHints() {
+      hintsVisible = !hintsVisible;
+      hintButton.textContent = hintsVisible ? "Hide tiny hints" : "Show tiny hints";
+      setMessage(hintsVisible
+        ? "Tiny motherboard labels enabled. A good sysadmin calls this documentation, not cheating."
+        : "Tiny hints hidden. Back to raw RAM instinct."
+      );
+      renderBoard();
+    }
+
     function startFakeDownload() {
       downloadOverlay.classList.add("show");
       let progress = 0;
@@ -1379,6 +1427,7 @@
     }
 
     rotateButton.addEventListener("click", () => rotatePiece());
+    hintButton.addEventListener("click", toggleHints);
     resetButton.addEventListener("click", resetGame);
     undoButton.addEventListener("click", undoLastPlacement);
     panicButton.addEventListener("click", () => {
