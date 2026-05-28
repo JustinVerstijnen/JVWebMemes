@@ -613,6 +613,44 @@
       color: rgba(255, 255, 255, 0.76);
       line-height: 1.5;
     }
+    @keyframes ramWarp {
+      0% {
+        transform: scale(1) rotate(0deg);
+        filter: hue-rotate(0deg) saturate(1);
+      }
+      40% {
+        transform: scale(1.04) rotate(-1deg);
+        filter: hue-rotate(90deg) saturate(1.5);
+      }
+      72% {
+        transform: scale(0.96) rotate(1deg);
+        filter: hue-rotate(180deg) saturate(2);
+      }
+      100% {
+        transform: scale(1.08) rotate(0deg);
+        filter: hue-rotate(270deg) saturate(2.4);
+      }
+    }
+
+    @keyframes glowPulse {
+      0%, 100% {
+        box-shadow: 0 0 0 rgba(124, 255, 107, 0);
+      }
+      50% {
+        box-shadow: 0 0 42px rgba(124, 255, 107, 0.34);
+      }
+    }
+
+    .download-overlay.finalizing .download-card {
+      animation: ramWarp 900ms ease-in-out infinite alternate, glowPulse 700ms ease-in-out infinite;
+      border-color: rgba(124, 255, 107, 0.5);
+    }
+
+    .download-overlay.finalizing .progressbar span {
+      filter: brightness(1.4) saturate(1.8);
+    }
+
+
 
 
 
@@ -1410,8 +1448,8 @@
 
       if (filled === totalCells && allPiecesUsed) {
         completed = true;
-        setMessage("RAM bank successfully filled. Launching the totally legitimate RAM download...", "success");
-        startRickroll();
+        setMessage("RAM bank successfully filled. Preparing the totally legitimate RAM download...", "success");
+        window.setTimeout(startFakeDownload, 500);
       }
     }
 
@@ -1461,6 +1499,7 @@
       renderBoard();
     }
     function startRickroll() {
+      downloadOverlay.classList.remove("show", "finalizing");
       rickrollOverlay.classList.add("show");
 
       const playPromise = rickrollAudio.play();
@@ -1494,11 +1533,12 @@
 
         if (progress >= 100) {
           window.clearInterval(interval);
-          downloadText.textContent = "Download complete. Installing RAM into your browser...";
+          downloadText.textContent = "Download complete. Injecting RAM into your browser memory...";
           terminal.textContent += "\n> success: definitely not a rickroll";
+          downloadOverlay.classList.add("finalizing");
           window.setTimeout(() => {
             startRickroll();
-          }, 900);
+          }, 1600);
         }
       }, 260);
     }
