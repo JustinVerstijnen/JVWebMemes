@@ -1,12 +1,11 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Cheap RAM Downloader 3000</title>
   <style>
     :root {
-      --bg: #10131a;
       --panel: rgba(255, 255, 255, 0.08);
       --text: #f5f7fb;
       --muted: #aab3c5;
@@ -40,7 +39,8 @@
       overflow-x: hidden;
     }
 
-    button, a {
+    button,
+    a {
       -webkit-tap-highlight-color: transparent;
     }
 
@@ -117,7 +117,7 @@
     }
 
     .subtitle {
-      max-width: 650px;
+      max-width: 720px;
       margin: 0;
       color: var(--muted);
       font-size: 18px;
@@ -192,7 +192,7 @@
 
     main {
       display: grid;
-      grid-template-columns: 340px 1fr;
+      grid-template-columns: 1fr;
       gap: 24px;
       align-items: start;
     }
@@ -214,8 +214,9 @@
 
     .shop-list {
       display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 12px;
-      margin: 18px 0;
+      margin: 18px 0 0;
     }
 
     .ram-card {
@@ -244,17 +245,6 @@
       font-weight: 900;
     }
 
-    .hint {
-      margin-top: 16px;
-      padding: 14px;
-      border-radius: 16px;
-      background: rgba(255, 209, 102, 0.1);
-      border: 1px solid rgba(255, 209, 102, 0.22);
-      color: #ffe0a3;
-      font-size: 14px;
-      line-height: 1.5;
-    }
-
     .game-panel {
       min-height: 620px;
     }
@@ -269,7 +259,7 @@
 
     .game-head p {
       margin: 6px 0 0;
-      max-width: 700px;
+      max-width: 780px;
     }
 
     .progress-box {
@@ -287,9 +277,118 @@
       color: var(--accent);
     }
 
-    .game-layout {
+    .piece-zone {
+      padding: 16px;
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: 18px;
+    }
+
+    .piece-zone-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .piece-zone-top b {
+      color: var(--text);
+    }
+
+    .pieces {
       display: grid;
-      grid-template-columns: 1fr 290px;
+      grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
+      gap: 10px;
+    }
+
+    .piece-card {
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      gap: 9px;
+      align-items: center;
+      min-height: 62px;
+      padding: 9px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      user-select: none;
+      cursor: grab;
+      touch-action: none;
+      transition: transform 150ms ease, border-color 150ms ease, opacity 150ms ease, filter 150ms ease;
+    }
+
+    .piece-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(124, 255, 107, 0.45);
+    }
+
+    .piece-card.selected {
+      border-color: rgba(124, 255, 107, 0.85);
+      box-shadow: 0 0 0 3px rgba(124, 255, 107, 0.12);
+    }
+
+    .piece-card.dragging-source {
+      opacity: 0.25;
+      transform: scale(0.98);
+    }
+
+    .piece-card.used {
+      opacity: 0.28;
+      filter: grayscale(1);
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .mini-grid,
+    .drag-grid {
+      display: grid;
+      width: fit-content;
+    }
+
+    .mini-grid {
+      grid-template-columns: repeat(var(--cols), 11px);
+      grid-template-rows: repeat(var(--rows), 11px);
+      gap: 2px;
+    }
+
+    .mini-cell,
+    .drag-cell {
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .mini-cell {
+      width: 11px;
+      height: 11px;
+    }
+
+    .mini-cell.on,
+    .drag-cell.on {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+
+    .piece-title {
+      font-weight: 900;
+      margin-bottom: 2px;
+      font-size: 13px;
+      line-height: 1.15;
+    }
+
+    .piece-sub {
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.25;
+    }
+
+    .board-shell {
+      display: grid;
+      grid-template-columns: minmax(280px, 600px) minmax(260px, 1fr);
       gap: 22px;
       align-items: start;
     }
@@ -342,13 +441,13 @@
     }
 
     .cell.preview-ok {
-      background: rgba(124, 255, 107, 0.2);
+      background: rgba(124, 255, 107, 0.22);
       border-color: rgba(124, 255, 107, 0.78);
       transform: scale(1.035);
     }
 
     .cell.preview-bad {
-      background: rgba(255, 95, 122, 0.2);
+      background: rgba(255, 95, 122, 0.22);
       border-color: rgba(255, 95, 122, 0.78);
     }
 
@@ -369,113 +468,37 @@
       background: rgba(0, 0, 0, 0.22);
     }
 
-    .piece-box {
+    .side-help {
       display: grid;
       gap: 14px;
     }
 
-    .piece-instructions {
+    .instructions,
+    .message {
       padding: 14px;
       border-radius: 18px;
       background: rgba(255, 255, 255, 0.06);
       border: 1px solid rgba(255, 255, 255, 0.1);
       color: var(--muted);
-      font-size: 14px;
       line-height: 1.5;
     }
 
-    .pieces {
-      display: grid;
-      gap: 12px;
+    .instructions {
+      font-size: 14px;
     }
 
-    .piece-card {
-      display: grid;
-      grid-template-columns: 72px 1fr;
-      gap: 12px;
-      align-items: center;
-      padding: 12px;
-      border-radius: 18px;
-      background: rgba(255, 255, 255, 0.07);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      user-select: none;
-      cursor: grab;
-      touch-action: none;
-      transition: transform 150ms ease, border-color 150ms ease, opacity 150ms ease, filter 150ms ease;
-    }
-
-    .piece-card:hover {
-      transform: translateY(-2px);
-      border-color: rgba(124, 255, 107, 0.45);
-    }
-
-    .piece-card.selected {
-      border-color: rgba(124, 255, 107, 0.85);
-      box-shadow: 0 0 0 3px rgba(124, 255, 107, 0.12);
-    }
-
-    .piece-card.dragging-source {
-      opacity: 0.25;
-      transform: scale(0.98);
-    }
-
-    .piece-card.used {
-      opacity: 0.34;
-      filter: grayscale(1);
-      cursor: not-allowed;
-      pointer-events: none;
-    }
-
-    .mini-grid,
-    .drag-grid {
-      display: grid;
-      grid-template-columns: repeat(4, 14px);
-      grid-template-rows: repeat(4, 14px);
-      gap: 3px;
-      width: fit-content;
-    }
-
-    .mini-cell,
-    .drag-cell {
-      width: 14px;
-      height: 14px;
-      border-radius: 4px;
-      background: rgba(255, 255, 255, 0.08);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-    }
-
-    .mini-cell.on,
-    .drag-cell.on {
-      background: linear-gradient(135deg, var(--accent), var(--accent-2));
-      border-color: rgba(255, 255, 255, 0.5);
-    }
-
-    .piece-title {
-      font-weight: 900;
-      margin-bottom: 3px;
-    }
-
-    .piece-sub {
-      color: var(--muted);
-      font-size: 13px;
+    .instructions b {
+      color: var(--text);
     }
 
     .controls {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
-      margin-top: 16px;
     }
 
     .message {
-      margin-top: 16px;
-      min-height: 52px;
-      padding: 14px;
-      border-radius: 18px;
-      color: var(--muted);
-      background: rgba(255, 255, 255, 0.055);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      line-height: 1.5;
+      min-height: 74px;
     }
 
     .message.success {
@@ -494,13 +517,42 @@
       position: fixed;
       z-index: 9999;
       pointer-events: none;
-      padding: 12px;
+      padding: 10px;
       border-radius: 18px;
       background: rgba(20, 25, 36, 0.92);
       border: 1px solid rgba(124, 255, 107, 0.45);
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
       transform: translate(-50%, -50%);
       opacity: 0.96;
+    }
+
+    .drag-preview.board-mode {
+      padding: 0;
+      background: transparent;
+      border: 0;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .drag-grid {
+      grid-template-columns: repeat(var(--cols), var(--drag-cell-size));
+      grid-template-rows: repeat(var(--rows), var(--drag-cell-size));
+      gap: var(--drag-gap);
+    }
+
+    .drag-cell {
+      width: var(--drag-cell-size);
+      height: var(--drag-cell-size);
+      opacity: 0;
+    }
+
+    .drag-cell.on {
+      opacity: 0.82;
+      box-shadow: inset 0 -8px 16px rgba(0, 0, 0, 0.16);
+    }
+
+    .drag-preview.board-mode .drag-cell.on {
+      border-radius: 10px;
     }
 
     .download-overlay {
@@ -581,8 +633,8 @@
 
     @media (max-width: 980px) {
       header,
-      main,
-      .game-layout {
+      .board-shell,
+      .shop-list {
         grid-template-columns: 1fr;
       }
 
@@ -612,11 +664,21 @@
         padding: 20px;
       }
 
-      .cell {
+      .pieces {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .piece-card {
+        grid-template-columns: 38px 1fr;
+      }
+
+      .cell,
+      .drag-preview.board-mode .drag-cell.on {
         border-radius: 7px;
       }
 
-      .board-label {
+      .board-label,
+      .piece-zone-top {
         flex-direction: column;
         align-items: flex-start;
       }
@@ -629,125 +691,129 @@
   <div class="wrap">
     <header>
       <section class="hero">
-        <div class="badge">⚡ 100% digitale RAM, 0% garantie</div>
+        <div class="badge">⚡ 100% digital RAM, 0% warranty</div>
         <h1>Cheap RAM Downloader 3000</h1>
         <p class="subtitle">
-          Download extra werkgeheugen direct via je browser. Vul eerst de RAM-bank met blokjes,
-          want zelfs nep-RAM moet netjes in dual channel draaien.
+          Download extra memory straight through your browser. First fill the RAM bank with suspiciously
+          Tetris-shaped modules, because even fake RAM deserves proper dual-channel treatment.
         </p>
         <div class="hero-actions">
           <a class="fake-button" href="#game">Start RAM download</a>
-          <button class="ghost-button" type="button" id="panicButton">Ik heb haast, mijn Chrome heeft 83 tabs</button>
+          <button class="ghost-button" type="button" id="panicButton">Emergency mode: Chrome has 83 tabs</button>
         </div>
       </section>
 
-      <aside class="stats" aria-label="RAM statistieken">
+      <aside class="stats" aria-label="RAM statistics">
         <div class="stat">
-          <strong>€0,00</strong>
-          <span>Prijs per virtuele gigabyte</span>
+          <strong>€0.00</strong>
+          <span>Price per virtual gigabyte</span>
         </div>
         <div class="stat">
           <strong>∞ MHz</strong>
-          <span>Kloksnelheid volgens marketing</span>
+          <span>Clock speed, according to marketing</span>
         </div>
         <div class="stat">
           <strong>404%</strong>
-          <span>Meer FPS in Excel</span>
+          <span>More FPS in Excel</span>
         </div>
       </aside>
     </header>
 
     <main>
       <aside class="panel">
-        <h2>Kies je downloadpakket</h2>
-        <p>Selecteer niks. Alles is al gratis, verdacht snel en technisch gezien onmogelijk.</p>
+        <h2>Choose your download package</h2>
+        <p>Do not overthink it. Everything is free, suspiciously fast, and technically impossible.</p>
 
         <div class="shop-list">
           <div class="ram-card">
             <div>
               <b>Budget RAM</b>
-              <small>Voor Notepad, Paint en één tabblad</small>
+              <small>For Notepad, Paint, and one browser tab</small>
             </div>
             <span class="price">8 GB</span>
           </div>
           <div class="ram-card">
             <div>
               <b>Pro Gamer RAM</b>
-              <small>Met RGB in de netwerkadapter</small>
+              <small>Includes RGB in the network adapter</small>
             </div>
             <span class="price">32 GB</span>
           </div>
           <div class="ram-card">
             <div>
               <b>Enterprise Cloud RAM</b>
-              <small>Komt aan per e-mailbijlage</small>
+              <small>Delivered as an email attachment</small>
             </div>
             <span class="price">256 GB</span>
           </div>
-        </div>
-
-        <div class="hint">
-          Sleep een RAM-blokje naar het bord. Tijdens het slepen zie je direct of het past.
-          Klik of druk op <b>R</b> om het geselecteerde blokje te draaien.
         </div>
       </aside>
 
       <section class="panel game-panel" id="game">
         <div class="game-head">
           <div>
-            <h2>RAM-bank formatteren</h2>
+            <h2>Format the RAM bank</h2>
             <p>
-              Vul alle 64 geheugencellen. Elk blokje is precies 4 cellen, dus de puzzel is nu eerlijk oplosbaar.
-              Als alles past, wordt de RAM “gedownload”.
+              Drag the modules from the tray into the motherboard. The preview now snaps to the actual grid cells,
+              so what you see is what gets installed. A full board unlocks the totally legitimate RAM download.
             </p>
           </div>
           <div class="progress-box">
             <strong id="filledCounter">0/64</strong>
-            <span>cellen gevuld</span>
+            <span>cells installed</span>
           </div>
         </div>
 
-        <div class="game-layout">
+        <div class="piece-zone">
+          <div class="piece-zone-top">
+            <span><b>RAM module tray</b> — drag from here, no scrolling marathon required.</span>
+            <span id="selectedLabel">Pick up a module</span>
+          </div>
+          <div class="pieces" id="pieces"></div>
+        </div>
+
+        <div class="board-shell">
           <div class="board-wrap">
             <div class="board-label">
               <span>Motherboard RAM slot A1</span>
-              <span id="selectedLabel">Sleep een blokje naar het bord</span>
+              <span>Green = fits. Red = RAM drama.</span>
             </div>
-            <div class="board" id="board" aria-label="RAM puzzelbord"></div>
-            <div class="controls">
-              <button type="button" id="rotateButton">Draai geselecteerd blokje ↻</button>
-              <button type="button" class="ghost-button" id="undoButton">Laatste blokje terug</button>
-              <button type="button" class="ghost-button" id="resetButton">Reset RAM-bank</button>
-            </div>
-            <div class="message" id="message">
-              Sleep een blokje vanaf rechts naar het bord. Je kunt ook een blokje aanklikken en daarna op het bord klikken.
-            </div>
+            <div class="board" id="board" aria-label="RAM puzzle board"></div>
           </div>
 
-          <div class="piece-box">
-            <div class="piece-instructions">
-              <b>Installatiehandleiding:</b><br />
-              1. Sleep een RAM-blokje.<br />
-              2. Laat los op het bord.<br />
-              3. Groen betekent: past. Rood betekent: RAM-drama.<br />
-              4. Vol bord = totaal legitieme download.
+          <div class="side-help">
+            <div class="instructions">
+              <b>Installation manual:</b><br />
+              1. Drag a RAM module from the tray.<br />
+              2. Move it over the board until the preview turns green.<br />
+              3. Drop it to install the module.<br />
+              4. Press <b>R</b> while dragging to rotate. Double-click a module to rotate it before dragging.
             </div>
-            <div class="pieces" id="pieces"></div>
+
+            <div class="controls">
+              <button type="button" id="rotateButton">Rotate selected module ↻</button>
+              <button type="button" class="ghost-button" id="undoButton">Undo last module</button>
+              <button type="button" class="ghost-button" id="resetButton">Reset RAM bank</button>
+            </div>
+
+            <div class="message" id="message">
+              Drag a module from the tray above. The ghost module will snap to the board cells, so the drop position is clear.
+            </div>
           </div>
         </div>
       </section>
     </main>
 
     <footer>
-      Cheap RAM Downloader 3000 is niet verantwoordelijk voor teleurgestelde systeembeheerders, knipperende RGB of spontaan zingende browsers.
+      Cheap RAM Downloader 3000 is not responsible for disappointed sysadmins, blinking RGB, or browsers suddenly singing.
     </footer>
   </div>
 
   <div class="download-overlay" id="downloadOverlay" role="dialog" aria-modal="true" aria-labelledby="downloadTitle">
     <div class="download-card">
-      <h2 id="downloadTitle">RAM downloaden...</h2>
-      <p id="downloadText">Virtuele DIMM's worden gecomprimeerd via de cloudkabel.</p>
-      <div class="progressbar" aria-label="Download voortgang">
+      <h2 id="downloadTitle">Downloading RAM...</h2>
+      <p id="downloadText">Compressing virtual DIMMs through the cloud cable.</p>
+      <div class="progressbar" aria-label="Download progress">
         <span id="progressFill"></span>
       </div>
       <div id="progressText">0%</div>
@@ -761,25 +827,22 @@
     const totalCells = boardSize * boardSize;
 
     const pieces = [
-      { id: "p1", name: "RAM L-Clip", sub: "Klikt bijna altijd", cells: [[0,0],[0,1],[0,2],[1,0]] },
-      { id: "p2", name: "Dual Hook", sub: "Voor onnodige snelheid", cells: [[0,1],[1,0],[1,1],[2,1]] },
-      { id: "p3", name: "Helpdesk T", sub: "Have you tried rebooting?", cells: [[0,1],[1,0],[1,1],[1,2]] },
-      { id: "p4", name: "RAM Stick", sub: "Rechttoe rechtaan", cells: [[0,0],[0,1],[0,2],[0,3]] },
-
-      { id: "p5", name: "Cache L-Clip", sub: "Maakt niks sneller", cells: [[0,0],[0,1],[0,2],[1,0]] },
-      { id: "p6", name: "Browser Hook", sub: "Voor 83 tabs", cells: [[0,1],[1,0],[1,1],[2,1]] },
-      { id: "p7", name: "Thermal T", sub: "Koelt placebo's", cells: [[0,1],[1,0],[1,1],[1,2]] },
-      { id: "p8", name: "RGB Stick", sub: "Licht = performance", cells: [[0,0],[0,1],[0,2],[0,3]] },
-
-      { id: "p9", name: "Cloud L-Clip", sub: "Komt uit de lucht", cells: [[0,0],[0,1],[0,2],[1,0]] },
-      { id: "p10", name: "BIOS Hook", sub: "Niet flashen na 17:00", cells: [[0,1],[1,0],[1,1],[2,1]] },
-      { id: "p11", name: "Server T", sub: "Voor serieuze onzin", cells: [[0,1],[1,0],[1,1],[1,2]] },
-      { id: "p12", name: "Enterprise Stick", sub: "Factuur volgt nooit", cells: [[0,0],[0,1],[0,2],[0,3]] },
-
-      { id: "p13", name: "Budget L-Clip", sub: "Past met beleid", cells: [[0,0],[0,1],[0,2],[1,0]] },
-      { id: "p14", name: "Swap Hook", sub: "SSD huilt zachtjes", cells: [[0,1],[1,0],[1,1],[2,1]] },
-      { id: "p15", name: "Parity T", sub: "Omdat bits gevoelens hebben", cells: [[0,1],[1,0],[1,1],[1,2]] },
-      { id: "p16", name: "Final Stick", sub: "De laatste echte nep-RAM", cells: [[0,0],[0,1],[0,2],[0,3]] }
+      { id: "p1", name: "RAM L-Clip", sub: "Clicks in eventually", cells: [[0,0],[0,1],[0,2],[1,0]] },
+      { id: "p2", name: "Dual Hook", sub: "For unnecessary speed", cells: [[0,1],[1,0],[1,1],[2,1]] },
+      { id: "p3", name: "Helpdesk T", sub: "Try rebooting it", cells: [[0,1],[1,0],[1,1],[1,2]] },
+      { id: "p4", name: "Straight Stick", sub: "Old-school DDR-ish", cells: [[0,0],[0,1],[0,2],[0,3]] },
+      { id: "p5", name: "Cache Block", sub: "Probably placebo", cells: [[0,0],[0,1],[1,0],[1,1]] },
+      { id: "p6", name: "Browser Z", sub: "Eats memory politely", cells: [[0,0],[0,1],[1,1],[1,2]] },
+      { id: "p7", name: "RGB S", sub: "Light equals speed", cells: [[0,1],[0,2],[1,0],[1,1]] },
+      { id: "p8", name: "Cloud L", sub: "Falls from the sky", cells: [[0,0],[1,0],[1,1],[1,2]] },
+      { id: "p9", name: "BIOS Brick", sub: "Do not flash at 5 PM", cells: [[0,0],[0,1],[1,0],[2,0]] },
+      { id: "p10", name: "Swap Stick", sub: "Your SSD is crying", cells: [[0,0],[1,0],[2,0],[3,0]] },
+      { id: "p11", name: "Thermal T", sub: "Cools the nonsense", cells: [[0,0],[0,1],[0,2],[1,1]] },
+      { id: "p12", name: "Parity Dot XL", sub: "Four feelings per bit", cells: [[0,0],[0,1],[1,0],[1,1]] },
+      { id: "p13", name: "Budget J", sub: "Fits with confidence", cells: [[0,2],[1,0],[1,1],[1,2]] },
+      { id: "p14", name: "Server S", sub: "Enterprise nonsense", cells: [[0,0],[0,1],[1,1],[1,2]] },
+      { id: "p15", name: "Final Z", sub: "Definitely important", cells: [[0,1],[0,2],[1,0],[1,1]] },
+      { id: "p16", name: "Tiny Square", sub: "Last-minute memory", cells: [[0,0],[0,1],[1,0],[1,1]] }
     ];
 
     const board = document.getElementById("board");
@@ -802,7 +865,7 @@
     let selectedRotation = 0;
     let placements = [];
     let completed = false;
-
+    let pointerState = null;
     let drag = null;
 
     function createEmptyGrid() {
@@ -829,6 +892,15 @@
         cells = rotateCells(cells);
       }
       return normalizeCells(cells);
+    }
+
+    function getShapeMetrics(cells) {
+      const normalized = normalizeCells(cells);
+      return {
+        cells: normalized,
+        rows: Math.max(...normalized.map(([row]) => row)) + 1,
+        cols: Math.max(...normalized.map(([, col]) => col)) + 1
+      };
     }
 
     function isUsed(id) {
@@ -879,8 +951,7 @@
         if (selectedPieceId === piece.id) card.classList.add("selected");
         if (isUsed(piece.id)) card.classList.add("used");
 
-        card.addEventListener("pointerdown", event => startDrag(event, piece.id));
-        card.addEventListener("click", () => selectPiece(piece.id));
+        card.addEventListener("pointerdown", event => handlePiecePointerDown(event, piece.id));
         card.addEventListener("dblclick", () => rotatePiece(piece.id));
 
         const mini = document.createElement("div");
@@ -897,11 +968,13 @@
     }
 
     function renderMiniShape(container, cells) {
-      const normalized = normalizeCells(cells);
-      const occupied = new Set(normalized.map(([row, col]) => `${row},${col}`));
+      const metrics = getShapeMetrics(cells);
+      const occupied = new Set(metrics.cells.map(([row, col]) => `${row},${col}`));
+      container.style.setProperty("--rows", metrics.rows);
+      container.style.setProperty("--cols", metrics.cols);
 
-      for (let row = 0; row < 4; row += 1) {
-        for (let col = 0; col < 4; col += 1) {
+      for (let row = 0; row < metrics.rows; row += 1) {
+        for (let col = 0; col < metrics.cols; col += 1) {
           const cell = document.createElement("div");
           cell.className = "mini-cell";
           if (occupied.has(`${row},${col}`)) cell.classList.add("on");
@@ -910,33 +983,130 @@
       }
     }
 
+    function handlePiecePointerDown(event, pieceId) {
+      if (completed || isUsed(pieceId) || event.button !== 0) return;
+
+      event.preventDefault();
+
+      pointerState = {
+        pointerId: event.pointerId,
+        pieceId,
+        source: event.currentTarget,
+        startX: event.clientX,
+        startY: event.clientY,
+        lastX: event.clientX,
+        lastY: event.clientY
+      };
+
+      window.addEventListener("pointermove", handlePointerMove);
+      window.addEventListener("pointerup", handlePointerUp);
+      window.addEventListener("pointercancel", handlePointerCancel);
+    }
+
+    function handlePointerMove(event) {
+      if (!pointerState || event.pointerId !== pointerState.pointerId) return;
+
+      pointerState.lastX = event.clientX;
+      pointerState.lastY = event.clientY;
+
+      const moved = Math.hypot(event.clientX - pointerState.startX, event.clientY - pointerState.startY);
+      if (!drag && moved > 6) {
+        startDrag(pointerState);
+      }
+
+      if (drag) {
+        updateDragPreview(event.clientX, event.clientY);
+      }
+    }
+
+    function handlePointerUp(event) {
+      if (!pointerState || event.pointerId !== pointerState.pointerId) return;
+
+      if (!drag) {
+        selectPiece(pointerState.pieceId);
+        cleanupPointerListeners();
+        pointerState = null;
+        return;
+      }
+
+      const targetCell = getBoardCellFromPoint(event.clientX, event.clientY);
+      let placed = false;
+
+      if (targetCell) {
+        placed = placePiece(drag.pieceId, targetCell.row, targetCell.col, selectedRotation);
+      } else {
+        setMessage("Drop the module on the RAM bank. The floor sadly has no DDR5 slot.", "error");
+      }
+
+      endDrag(placed);
+      cleanupPointerListeners();
+      pointerState = null;
+    }
+
+    function handlePointerCancel(event) {
+      if (!pointerState || event.pointerId !== pointerState.pointerId) return;
+      cancelDrag();
+      cleanupPointerListeners();
+      pointerState = null;
+    }
+
+    function cleanupPointerListeners() {
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener("pointercancel", handlePointerCancel);
+    }
+
+    function startDrag(state) {
+      const piece = getPiece(state.pieceId);
+      selectedPieceId = state.pieceId;
+      selectedLabel.textContent = `${piece.name} in hand`;
+      setMessage(`Drag ${piece.name} over the board. Press R while dragging to rotate it.`);
+
+      state.source.classList.add("dragging-source");
+
+      const preview = document.createElement("div");
+      preview.className = "drag-preview";
+      document.body.appendChild(preview);
+
+      drag = {
+        pointerId: state.pointerId,
+        pieceId: state.pieceId,
+        source: state.source,
+        preview,
+        overCell: null,
+        lastClientX: state.lastX,
+        lastClientY: state.lastY
+      };
+
+      renderDragShape(preview, getRotatedCells(piece, selectedRotation), false);
+      updateDragPreview(state.lastX, state.lastY);
+      renderPieces();
+    }
+
     function selectPiece(id) {
       if (isUsed(id)) return;
 
       selectedPieceId = id;
-      if (!drag || drag.pieceId !== id) selectedRotation = selectedPieceId === id ? selectedRotation : 0;
-
       const piece = getPiece(id);
-      selectedLabel.textContent = `${piece.name} geselecteerd`;
-      setMessage(`Sleep ${piece.name} naar het bord of klik op een cel om hem te plaatsen.`);
+      selectedLabel.textContent = `${piece.name} selected`;
+      setMessage(`Selected ${piece.name}. Drag it to the board or click a board cell to install it.`);
       renderPieces();
     }
 
     function rotatePiece(id = selectedPieceId) {
       if (!id || isUsed(id)) {
-        setMessage("Selecteer eerst een blokje om te draaien. RAM zonder richting is gewoon confetti.", "error");
+        setMessage("Select a module first. Directionless RAM is just expensive confetti.", "error");
         return;
       }
 
       selectedPieceId = id;
       selectedRotation = (selectedRotation + 1) % 4;
       const piece = getPiece(id);
-      selectedLabel.textContent = `${piece.name} gedraaid`;
-      setMessage(`${piece.name} gedraaid. Nu past hij vast beter. Of slechter. Spannend.`);
+      selectedLabel.textContent = `${piece.name} rotated`;
+      setMessage(`${piece.name} rotated. It now fits either better or worse. Very scientific.`);
 
       if (drag && drag.pieceId === id) {
-        renderDragPreview(drag.preview, getRotatedCells(piece, selectedRotation));
-        updateDragPreview(drag.lastClientX, drag.lastClientY);
+        updateDragPreview(drag.lastClientX, drag.lastClientY, true);
       }
 
       renderPieces();
@@ -956,7 +1126,7 @@
       if (completed) return false;
 
       if (!selectedPieceId) {
-        setMessage("Selecteer of sleep eerst een RAM-blokje. Zelfs goedkope RAM moet ergens vandaan komen.", "error");
+        setMessage("Select or drag a RAM module first. Even cheap RAM has to come from somewhere.", "error");
         return false;
       }
 
@@ -965,11 +1135,10 @@
 
     function placePiece(pieceId, row, col, rotation) {
       const piece = getPiece(pieceId);
-
       if (!piece || isUsed(pieceId)) return false;
 
       if (!canPlace(piece, row, col, rotation)) {
-        setMessage("Deze RAM past daar niet. Groen is goed, rood is RAM-drama.", "error");
+        setMessage("That module does not fit there. Green means good. Red means RAM drama.", "error");
         return false;
       }
 
@@ -988,8 +1157,8 @@
 
       selectedPieceId = null;
       selectedRotation = 0;
-      selectedLabel.textContent = "Sleep een blokje naar het bord";
-      setMessage(`${piece.name} geplaatst. Je RAM voelt nu al goedkoper aan.`, "success");
+      selectedLabel.textContent = "Pick up a module";
+      setMessage(`${piece.name} installed. Your RAM already feels cheaper.`, "success");
       clearBoardPreview();
       renderBoard();
       renderPieces();
@@ -997,51 +1166,21 @@
       return true;
     }
 
-    function startDrag(event, pieceId) {
-      if (completed || isUsed(pieceId) || event.button !== 0) return;
-
-      const piece = getPiece(pieceId);
-      selectedPieceId = pieceId;
-      selectedRotation = selectedPieceId === pieceId ? selectedRotation : 0;
-
-      const source = event.currentTarget;
-      source.setPointerCapture(event.pointerId);
-      source.classList.add("dragging-source");
-
-      const preview = document.createElement("div");
-      preview.className = "drag-preview";
-      document.body.appendChild(preview);
-      renderDragPreview(preview, getRotatedCells(piece, selectedRotation));
-
-      drag = {
-        pointerId: event.pointerId,
-        pieceId,
-        source,
-        preview,
-        overCell: null,
-        lastClientX: event.clientX,
-        lastClientY: event.clientY,
-        moved: false
-      };
-
-      selectedLabel.textContent = `${piece.name} slepen`;
-      setMessage(`Laat ${piece.name} los op een groen vak. Druk tijdens het slepen op R om te draaien.`);
-      updateDragPreview(event.clientX, event.clientY);
-      renderPieces();
-
-      window.addEventListener("pointermove", handlePointerMove);
-      window.addEventListener("pointerup", handlePointerUp);
-      window.addEventListener("pointercancel", cancelDrag);
-    }
-
-    function renderDragPreview(container, cells) {
+    function renderDragShape(container, cells, boardMode, boardSizing = null) {
       container.innerHTML = "";
+      container.classList.toggle("board-mode", boardMode);
+
+      const metrics = getShapeMetrics(cells);
+      const occupied = new Set(metrics.cells.map(([row, col]) => `${row},${col}`));
       const gridElement = document.createElement("div");
       gridElement.className = "drag-grid";
+      gridElement.style.setProperty("--rows", metrics.rows);
+      gridElement.style.setProperty("--cols", metrics.cols);
+      gridElement.style.setProperty("--drag-cell-size", boardMode && boardSizing ? `${boardSizing.cellSize}px` : "14px");
+      gridElement.style.setProperty("--drag-gap", boardMode && boardSizing ? `${boardSizing.gap}px` : "3px");
 
-      const occupied = new Set(normalizeCells(cells).map(([row, col]) => `${row},${col}`));
-      for (let row = 0; row < 4; row += 1) {
-        for (let col = 0; col < 4; col += 1) {
+      for (let row = 0; row < metrics.rows; row += 1) {
+        for (let col = 0; col < metrics.cols; col += 1) {
           const cell = document.createElement("div");
           cell.className = "drag-cell";
           if (occupied.has(`${row},${col}`)) cell.classList.add("on");
@@ -1052,74 +1191,48 @@
       container.appendChild(gridElement);
     }
 
-    function handlePointerMove(event) {
-      if (!drag || event.pointerId !== drag.pointerId) return;
-
-      drag.moved = true;
-      drag.lastClientX = event.clientX;
-      drag.lastClientY = event.clientY;
-      updateDragPreview(event.clientX, event.clientY);
-    }
-
-    function handlePointerUp(event) {
-      if (!drag || event.pointerId !== drag.pointerId) return;
-
-      const targetCell = getBoardCellFromPoint(event.clientX, event.clientY);
-      let placed = false;
-
-      if (targetCell) {
-        placed = placePiece(drag.pieceId, targetCell.row, targetCell.col, selectedRotation);
-      } else {
-        setMessage("Laat het blokje los op de RAM-bank. De vloer heeft helaas geen DDR5-slot.", "error");
-      }
-
-      endDrag(placed);
-    }
-
-    function cancelDrag() {
-      endDrag(false);
-      setMessage("RAM-installatie geannuleerd. Er is niets ontploft.");
-    }
-
-    function endDrag(placed) {
+    function updateDragPreview(clientX, clientY, forceRender = false) {
       if (!drag) return;
 
-      clearBoardPreview();
-      drag.source.classList.remove("dragging-source");
-      drag.preview.remove();
+      drag.lastClientX = clientX;
+      drag.lastClientY = clientY;
 
-      window.removeEventListener("pointermove", handlePointerMove);
-      window.removeEventListener("pointerup", handlePointerUp);
-      window.removeEventListener("pointercancel", cancelDrag);
-
-      const lastPieceId = drag.pieceId;
-      drag = null;
-
-      if (!placed && selectedPieceId === lastPieceId) {
-        const piece = getPiece(lastPieceId);
-        selectedLabel.textContent = `${piece.name} geselecteerd`;
-      }
-
-      renderPieces();
-    }
-
-    function updateDragPreview(clientX, clientY) {
-      if (!drag) return;
-
-      drag.preview.style.left = `${clientX}px`;
-      drag.preview.style.top = `${clientY}px`;
-
+      const piece = getPiece(drag.pieceId);
+      const cells = getRotatedCells(piece, selectedRotation);
       const targetCell = getBoardCellFromPoint(clientX, clientY);
       drag.overCell = targetCell;
+
+      if (targetCell) {
+        const sizing = getBoardSizing();
+        if (forceRender || !drag.preview.classList.contains("board-mode")) {
+          renderDragShape(drag.preview, cells, true, sizing);
+        }
+
+        drag.preview.style.left = `${sizing.rect.left + targetCell.col * (sizing.cellSize + sizing.gap)}px`;
+        drag.preview.style.top = `${sizing.rect.top + targetCell.row * (sizing.cellSize + sizing.gap)}px`;
+      } else {
+        if (forceRender || drag.preview.classList.contains("board-mode")) {
+          renderDragShape(drag.preview, cells, false);
+        }
+
+        drag.preview.style.left = `${clientX}px`;
+        drag.preview.style.top = `${clientY}px`;
+      }
+
       showBoardPreview(targetCell);
     }
 
-    function getBoardCellFromPoint(clientX, clientY) {
+    function getBoardSizing() {
       const rect = board.getBoundingClientRect();
-      if (clientX < rect.left || clientX > rect.right || clientY < rect.top || clientY > rect.bottom) return null;
-
       const gap = parseFloat(getComputedStyle(board).gap) || 0;
       const cellSize = (rect.width - gap * (boardSize - 1)) / boardSize;
+      return { rect, gap, cellSize };
+    }
+
+    function getBoardCellFromPoint(clientX, clientY) {
+      const { rect, gap, cellSize } = getBoardSizing();
+      if (clientX < rect.left || clientX > rect.right || clientY < rect.top || clientY > rect.bottom) return null;
+
       const x = clientX - rect.left;
       const y = clientY - rect.top;
       const col = Math.floor(x / (cellSize + gap));
@@ -1156,6 +1269,31 @@
       });
     }
 
+    function endDrag(placed) {
+      if (!drag) return;
+
+      clearBoardPreview();
+      drag.source.classList.remove("dragging-source");
+      drag.preview.remove();
+
+      const lastPieceId = drag.pieceId;
+      drag = null;
+
+      if (!placed && selectedPieceId === lastPieceId) {
+        const piece = getPiece(lastPieceId);
+        selectedLabel.textContent = `${piece.name} selected`;
+      }
+
+      renderPieces();
+    }
+
+    function cancelDrag() {
+      if (drag) {
+        endDrag(false);
+        setMessage("RAM installation cancelled. Nothing exploded.");
+      }
+    }
+
     function updateCounter() {
       const filled = grid.flat().filter(Boolean).length;
       filledCounter.textContent = `${filled}/${totalCells}`;
@@ -1167,7 +1305,7 @@
 
       if (filled === totalCells && allPiecesUsed) {
         completed = true;
-        setMessage("RAM-bank succesvol gevuld. Download wordt voorbereid... heel betrouwbaar allemaal.", "success");
+        setMessage("RAM bank successfully filled. Preparing download... extremely trustworthy behavior.", "success");
         window.setTimeout(startFakeDownload, 500);
       }
     }
@@ -1177,7 +1315,7 @@
 
       const last = placements.pop();
       if (!last) {
-        setMessage("Er is nog niks geplaatst. Dat is ook een soort cable management.", "error");
+        setMessage("Nothing has been installed yet. That is also a form of cable management.", "error");
         return;
       }
 
@@ -1188,8 +1326,8 @@
       selectedPieceId = last.pieceId;
       selectedRotation = last.rotation;
       const piece = getPiece(last.pieceId);
-      selectedLabel.textContent = `${piece.name} geselecteerd`;
-      setMessage(`${piece.name} teruggehaald. Tweede kans voor de RAM-installatie.`);
+      selectedLabel.textContent = `${piece.name} selected`;
+      setMessage(`${piece.name} removed. Second chance for the RAM installation.`);
       renderBoard();
       renderPieces();
     }
@@ -1202,8 +1340,8 @@
       selectedRotation = 0;
       placements = [];
       clearBoardPreview();
-      selectedLabel.textContent = "Sleep een blokje naar het bord";
-      setMessage("RAM-bank gereset. Alle bits liggen weer op de grond.");
+      selectedLabel.textContent = "Pick up a module";
+      setMessage("RAM bank reset. All bits are back on the floor.");
       renderBoard();
       renderPieces();
     }
@@ -1231,7 +1369,7 @@
 
         if (progress >= 100) {
           window.clearInterval(interval);
-          downloadText.textContent = "Download voltooid. RAM wordt nu in je browser geplaatst...";
+          downloadText.textContent = "Download complete. Installing RAM into your browser...";
           terminal.textContent += "\n> success: definitely not a rickroll";
           window.setTimeout(() => {
             window.location.href = redirectUrl;
@@ -1244,7 +1382,7 @@
     resetButton.addEventListener("click", resetGame);
     undoButton.addEventListener("click", undoLastPlacement);
     panicButton.addEventListener("click", () => {
-      setMessage("Spoedmodus actief: helaas moet zelfs nood-RAM eerst door de puzzelcommissie.");
+      setMessage("Emergency mode enabled: sadly, even emergency RAM has to pass the puzzle committee.");
       document.getElementById("game").scrollIntoView({ behavior: "smooth", block: "start" });
     });
 
@@ -1253,7 +1391,7 @@
         rotatePiece();
       }
 
-      if (event.key === "Escape" && drag) {
+      if (event.key === "Escape") {
         cancelDrag();
       }
     });
