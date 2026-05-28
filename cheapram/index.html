@@ -589,30 +589,6 @@
       z-index: 1;
     }
 
-    .rickroll-card {
-      position: relative;
-      z-index: 2;
-      width: min(460px, 100%);
-      padding: 24px;
-      border-radius: 24px;
-      text-align: center;
-      background: rgba(8, 10, 15, 0.58);
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.48);
-      backdrop-filter: blur(10px);
-    }
-
-    .rickroll-card h2 {
-      margin: 0 0 8px;
-      font-size: 30px;
-      letter-spacing: -0.05em;
-    }
-
-    .rickroll-card p {
-      margin: 0 0 16px;
-      color: rgba(255, 255, 255, 0.76);
-      line-height: 1.5;
-    }
     @keyframes ramWarp {
       0% {
         transform: scale(1) rotate(0deg);
@@ -921,16 +897,10 @@
       <div class="terminal" id="terminal">&gt; checking motherboard vibes...</div>
     </div>
   </div>
-  <div class="rickroll-overlay" id="rickrollOverlay" role="dialog" aria-modal="true" aria-labelledby="rickrollTitle">
+  <div class="rickroll-overlay" id="rickrollOverlay" role="dialog" aria-modal="true" aria-label="RAM download complete">
     <img src="rickroll.gif" alt="Rickroll" class="rickroll-gif" />
-    <div class="rickroll-card">
-      <h2 id="rickrollTitle">RAM download complete</h2>
-      <p>Your browser has been upgraded with premium meme memory.</p>
-      <button type="button" id="playRickrollButton">Click if audio did not start</button>
-    </div>
     <audio id="rickrollAudio" loop>
       <source src="rickroll.mp3" type="audio/mpeg" />
-      Your browser does not support audio. Sadly, no Rick Roll for you.
     </audio>
   </div>
 
@@ -988,7 +958,6 @@
     const downloadText = document.getElementById("downloadText");
     const rickrollOverlay = document.getElementById("rickrollOverlay");
     const rickrollAudio = document.getElementById("rickrollAudio");
-    const playRickrollButton = document.getElementById("playRickrollButton");
 
     let grid = createEmptyGrid();
     let selectedPieceId = null;
@@ -1504,9 +1473,7 @@
 
       const playPromise = rickrollAudio.play();
       if (playPromise && typeof playPromise.catch === "function") {
-        playPromise.catch(() => {
-          setMessage("The browser blocked autoplay. The big button on the meme screen starts the audio.", "error");
-        });
+        playPromise.catch(() => {});
       }
     }
 
@@ -1534,7 +1501,8 @@
         if (progress >= 100) {
           window.clearInterval(interval);
           downloadText.textContent = "Download complete. Injecting RAM into your browser memory...";
-          terminal.textContent += "\n> success: definitely not a rickroll";
+          terminal.textContent += "
+> success: definitely not a rickroll";
           downloadOverlay.classList.add("finalizing");
           window.setTimeout(() => {
             startRickroll();
@@ -1543,11 +1511,6 @@
       }, 260);
     }
 
-    playRickrollButton.addEventListener("click", () => {
-      rickrollAudio.play().catch(() => {
-        setMessage("Audio could not be started. Check whether the browser is blocking media playback.", "error");
-      });
-    });
 
     rotateButton.addEventListener("click", () => rotatePiece());
     hintButton.addEventListener("click", toggleHints);
