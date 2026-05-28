@@ -8,7 +8,6 @@
     :root {
       --bg: #10131a;
       --panel: rgba(255, 255, 255, 0.08);
-      --panel-strong: rgba(255, 255, 255, 0.14);
       --text: #f5f7fb;
       --muted: #aab3c5;
       --accent: #7cff6b;
@@ -17,12 +16,16 @@
       --warning: #ffd166;
       --cell: rgba(255, 255, 255, 0.09);
       --cell-border: rgba(255, 255, 255, 0.16);
-      --filled: #7cff6b;
       --shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+      --cell-gap: 7px;
     }
 
     * {
       box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
     }
 
     body {
@@ -35,6 +38,10 @@
         radial-gradient(circle at bottom right, rgba(124, 255, 107, 0.16), transparent 35%),
         linear-gradient(135deg, #10131a 0%, #181c27 55%, #0d1118 100%);
       overflow-x: hidden;
+    }
+
+    button, a {
+      -webkit-tap-highlight-color: transparent;
     }
 
     .noise {
@@ -136,6 +143,14 @@
       background: linear-gradient(135deg, var(--accent), #d8ff7b);
       box-shadow: 0 12px 28px rgba(124, 255, 107, 0.2);
       transition: transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
+      touch-action: manipulation;
+    }
+
+    .fake-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
     }
 
     .fake-button:hover,
@@ -214,10 +229,6 @@
       border: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    .ram-card div:first-child {
-      min-width: 0;
-    }
-
     .ram-card b {
       display: block;
       margin-bottom: 4px;
@@ -278,7 +289,7 @@
 
     .game-layout {
       display: grid;
-      grid-template-columns: 1fr 270px;
+      grid-template-columns: 1fr 290px;
       gap: 22px;
       align-items: start;
     }
@@ -295,6 +306,7 @@
     .board-label {
       display: flex;
       justify-content: space-between;
+      gap: 12px;
       align-items: center;
       margin-bottom: 12px;
       color: var(--muted);
@@ -304,11 +316,12 @@
     .board {
       display: grid;
       grid-template-columns: repeat(8, minmax(28px, 1fr));
-      gap: 7px;
+      gap: var(--cell-gap);
       width: 100%;
       max-width: 560px;
       aspect-ratio: 1 / 1;
       margin: 0 auto;
+      touch-action: none;
     }
 
     .cell {
@@ -317,7 +330,7 @@
       background: var(--cell);
       border: 1px solid var(--cell-border);
       overflow: hidden;
-      transition: transform 120ms ease, background 120ms ease, border-color 120ms ease;
+      transition: transform 120ms ease, background 120ms ease, border-color 120ms ease, opacity 120ms ease;
     }
 
     .cell::after {
@@ -328,15 +341,15 @@
       border: 1px dashed rgba(255, 255, 255, 0.08);
     }
 
-    .cell.hover-ok {
-      background: rgba(124, 255, 107, 0.18);
-      border-color: rgba(124, 255, 107, 0.8);
+    .cell.preview-ok {
+      background: rgba(124, 255, 107, 0.2);
+      border-color: rgba(124, 255, 107, 0.78);
       transform: scale(1.035);
     }
 
-    .cell.hover-bad {
-      background: rgba(255, 95, 122, 0.18);
-      border-color: rgba(255, 95, 122, 0.8);
+    .cell.preview-bad {
+      background: rgba(255, 95, 122, 0.2);
+      border-color: rgba(255, 95, 122, 0.78);
     }
 
     .cell.filled {
@@ -386,14 +399,12 @@
       background: rgba(255, 255, 255, 0.07);
       border: 1px solid rgba(255, 255, 255, 0.12);
       user-select: none;
-      transition: transform 150ms ease, border-color 150ms ease, opacity 150ms ease;
-    }
-
-    .piece-card:not(.used) {
       cursor: grab;
+      touch-action: none;
+      transition: transform 150ms ease, border-color 150ms ease, opacity 150ms ease, filter 150ms ease;
     }
 
-    .piece-card:not(.used):hover {
+    .piece-card:hover {
       transform: translateY(-2px);
       border-color: rgba(124, 255, 107, 0.45);
     }
@@ -403,13 +414,20 @@
       box-shadow: 0 0 0 3px rgba(124, 255, 107, 0.12);
     }
 
-    .piece-card.used {
-      opacity: 0.38;
-      filter: grayscale(1);
-      cursor: not-allowed;
+    .piece-card.dragging-source {
+      opacity: 0.25;
+      transform: scale(0.98);
     }
 
-    .mini-grid {
+    .piece-card.used {
+      opacity: 0.34;
+      filter: grayscale(1);
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .mini-grid,
+    .drag-grid {
       display: grid;
       grid-template-columns: repeat(4, 14px);
       grid-template-rows: repeat(4, 14px);
@@ -417,7 +435,8 @@
       width: fit-content;
     }
 
-    .mini-cell {
+    .mini-cell,
+    .drag-cell {
       width: 14px;
       height: 14px;
       border-radius: 4px;
@@ -425,7 +444,8 @@
       border: 1px solid rgba(255, 255, 255, 0.08);
     }
 
-    .mini-cell.on {
+    .mini-cell.on,
+    .drag-cell.on {
       background: linear-gradient(135deg, var(--accent), var(--accent-2));
       border-color: rgba(255, 255, 255, 0.5);
     }
@@ -468,6 +488,19 @@
       color: #ffd4dc;
       border-color: rgba(255, 95, 122, 0.36);
       background: rgba(255, 95, 122, 0.1);
+    }
+
+    .drag-preview {
+      position: fixed;
+      z-index: 9999;
+      pointer-events: none;
+      padding: 12px;
+      border-radius: 18px;
+      background: rgba(20, 25, 36, 0.92);
+      border: 1px solid rgba(124, 255, 107, 0.45);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+      transform: translate(-50%, -50%);
+      opacity: 0.96;
     }
 
     .download-overlay {
@@ -536,6 +569,7 @@
       min-height: 86px;
       overflow: hidden;
       border: 1px solid rgba(124, 255, 107, 0.16);
+      white-space: pre-line;
     }
 
     footer {
@@ -562,6 +596,10 @@
     }
 
     @media (max-width: 560px) {
+      :root {
+        --cell-gap: 5px;
+      }
+
       .wrap {
         width: min(100% - 20px, 1180px);
         padding: 18px 0;
@@ -574,12 +612,13 @@
         padding: 20px;
       }
 
-      .board {
-        gap: 5px;
-      }
-
       .cell {
         border-radius: 7px;
+      }
+
+      .board-label {
+        flex-direction: column;
+        align-items: flex-start;
       }
     }
   </style>
@@ -648,8 +687,8 @@
         </div>
 
         <div class="hint">
-          Tip: klik op een RAM-blokje en klik daarna op het bord om het te plaatsen.
-          Je kunt ook slepen. Met “Draai blokje” roteer je de geselecteerde vorm.
+          Sleep een RAM-blokje naar het bord. Tijdens het slepen zie je direct of het past.
+          Klik of druk op <b>R</b> om het geselecteerde blokje te draaien.
         </div>
       </aside>
 
@@ -658,7 +697,7 @@
           <div>
             <h2>RAM-bank formatteren</h2>
             <p>
-              Vul alle 64 geheugencellen. Gebruik elk blokje precies één keer.
+              Vul alle 64 geheugencellen. Elk blokje is precies 4 cellen, dus de puzzel is nu eerlijk oplosbaar.
               Als alles past, wordt de RAM “gedownload”.
             </p>
           </div>
@@ -672,26 +711,26 @@
           <div class="board-wrap">
             <div class="board-label">
               <span>Motherboard RAM slot A1</span>
-              <span id="selectedLabel">Geen blokje geselecteerd</span>
+              <span id="selectedLabel">Sleep een blokje naar het bord</span>
             </div>
             <div class="board" id="board" aria-label="RAM puzzelbord"></div>
             <div class="controls">
-              <button type="button" id="rotateButton">Draai blokje ↻</button>
+              <button type="button" id="rotateButton">Draai geselecteerd blokje ↻</button>
               <button type="button" class="ghost-button" id="undoButton">Laatste blokje terug</button>
               <button type="button" class="ghost-button" id="resetButton">Reset RAM-bank</button>
             </div>
             <div class="message" id="message">
-              Klik een blokje rechts aan. Plaats daarna het blokje op het bord. Geen echte RAM werd gewond tijdens het maken van deze pagina.
+              Sleep een blokje vanaf rechts naar het bord. Je kunt ook een blokje aanklikken en daarna op het bord klikken.
             </div>
           </div>
 
           <div class="piece-box">
             <div class="piece-instructions">
               <b>Installatiehandleiding:</b><br />
-              1. Kies een blokje.<br />
-              2. Draai indien nodig.<br />
-              3. Vul de RAM-bank volledig.<br />
-              4. Ontvang totaal legitieme download.
+              1. Sleep een RAM-blokje.<br />
+              2. Laat los op het bord.<br />
+              3. Groen betekent: past. Rood betekent: RAM-drama.<br />
+              4. Vol bord = totaal legitieme download.
             </div>
             <div class="pieces" id="pieces"></div>
           </div>
@@ -722,84 +761,25 @@
     const totalCells = boardSize * boardSize;
 
     const pieces = [
-      {
-        id: "p1",
-        name: "RAM Stick XL",
-        sub: "8 GB maar dan horizontaal",
-        cells: [[0,0],[0,1],[0,2],[0,3],[1,0],[1,1],[1,2],[1,3]]
-      },
-      {
-        id: "p2",
-        name: "Dual Channel L",
-        sub: "Past alleen als je lief vraagt",
-        cells: [[0,0],[1,0],[2,0],[2,1],[2,2],[2,3],[1,3]]
-      },
-      {
-        id: "p3",
-        name: "RGB Hoekje",
-        sub: "Meer licht is meer snelheid",
-        cells: [[0,0],[0,1],[1,0],[2,0],[2,1],[2,2]]
-      },
-      {
-        id: "p4",
-        name: "Cache Blok",
-        sub: "Verdacht stabiel",
-        cells: [[0,0],[0,1],[1,0],[1,1],[2,0],[2,1]]
-      },
-      {
-        id: "p5",
-        name: "Chrome Tab",
-        sub: "Eet vanzelf geheugen",
-        cells: [[0,0],[0,1],[0,2],[1,1],[2,1],[2,2]]
-      },
-      {
-        id: "p6",
-        name: "Helpdesk T",
-        sub: "Have you tried rebooting?",
-        cells: [[0,0],[0,1],[0,2],[1,1],[2,1],[3,1]]
-      },
-      {
-        id: "p7",
-        name: "Tiny DIMM",
-        sub: "Klein maar luid",
-        cells: [[0,0],[0,1],[1,0],[1,1]]
-      },
-      {
-        id: "p8",
-        name: "Server S",
-        sub: "Voor serieuze onzin",
-        cells: [[0,1],[0,2],[1,0],[1,1],[2,0],[2,1]]
-      },
-      {
-        id: "p9",
-        name: "Swap File Z",
-        sub: "SSD huilt zachtjes",
-        cells: [[0,0],[0,1],[1,1],[1,2],[2,2],[2,3]]
-      },
-      {
-        id: "p10",
-        name: "BIOS Brick",
-        sub: "Niet flashen na 17:00",
-        cells: [[0,0],[0,1],[0,2],[0,3],[1,3],[2,3]]
-      },
-      {
-        id: "p11",
-        name: "Mini Byte",
-        sub: "Voor de laatste gaatjes",
-        cells: [[0,0],[0,1],[1,0],[1,1]]
-      },
-      {
-        id: "p12",
-        name: "Parity Dot",
-        sub: "Omdat 63 raar voelt",
-        cells: [[0,0]]
-      },
-      {
-        id: "p13",
-        name: "Thermal Pad",
-        sub: "Koelt placebo's",
-        cells: [[0,0],[0,1],[0,2],[1,0],[1,1]]
-      }
+      { id: "p1", name: "RAM L-Clip", sub: "Klikt bijna altijd", cells: [[0,0],[0,1],[0,2],[1,0]] },
+      { id: "p2", name: "Dual Hook", sub: "Voor onnodige snelheid", cells: [[0,1],[1,0],[1,1],[2,1]] },
+      { id: "p3", name: "Helpdesk T", sub: "Have you tried rebooting?", cells: [[0,1],[1,0],[1,1],[1,2]] },
+      { id: "p4", name: "RAM Stick", sub: "Rechttoe rechtaan", cells: [[0,0],[0,1],[0,2],[0,3]] },
+
+      { id: "p5", name: "Cache L-Clip", sub: "Maakt niks sneller", cells: [[0,0],[0,1],[0,2],[1,0]] },
+      { id: "p6", name: "Browser Hook", sub: "Voor 83 tabs", cells: [[0,1],[1,0],[1,1],[2,1]] },
+      { id: "p7", name: "Thermal T", sub: "Koelt placebo's", cells: [[0,1],[1,0],[1,1],[1,2]] },
+      { id: "p8", name: "RGB Stick", sub: "Licht = performance", cells: [[0,0],[0,1],[0,2],[0,3]] },
+
+      { id: "p9", name: "Cloud L-Clip", sub: "Komt uit de lucht", cells: [[0,0],[0,1],[0,2],[1,0]] },
+      { id: "p10", name: "BIOS Hook", sub: "Niet flashen na 17:00", cells: [[0,1],[1,0],[1,1],[2,1]] },
+      { id: "p11", name: "Server T", sub: "Voor serieuze onzin", cells: [[0,1],[1,0],[1,1],[1,2]] },
+      { id: "p12", name: "Enterprise Stick", sub: "Factuur volgt nooit", cells: [[0,0],[0,1],[0,2],[0,3]] },
+
+      { id: "p13", name: "Budget L-Clip", sub: "Past met beleid", cells: [[0,0],[0,1],[0,2],[1,0]] },
+      { id: "p14", name: "Swap Hook", sub: "SSD huilt zachtjes", cells: [[0,1],[1,0],[1,1],[2,1]] },
+      { id: "p15", name: "Parity T", sub: "Omdat bits gevoelens hebben", cells: [[0,1],[1,0],[1,1],[1,2]] },
+      { id: "p16", name: "Final Stick", sub: "De laatste echte nep-RAM", cells: [[0,0],[0,1],[0,2],[0,3]] }
     ];
 
     const board = document.getElementById("board");
@@ -817,13 +797,17 @@
     const terminal = document.getElementById("terminal");
     const downloadText = document.getElementById("downloadText");
 
-    const state = {
-      grid: Array.from({ length: boardSize }, () => Array(boardSize).fill(null)),
-      selectedPieceId: null,
-      rotation: 0,
-      placements: [],
-      completed: false
-    };
+    let grid = createEmptyGrid();
+    let selectedPieceId = null;
+    let selectedRotation = 0;
+    let placements = [];
+    let completed = false;
+
+    let drag = null;
+
+    function createEmptyGrid() {
+      return Array.from({ length: boardSize }, () => Array(boardSize).fill(null));
+    }
 
     function normalizeCells(cells) {
       const minRow = Math.min(...cells.map(([row]) => row));
@@ -832,24 +816,23 @@
     }
 
     function rotateCells(cells) {
-      const rotated = cells.map(([row, col]) => [col, -row]);
-      return normalizeCells(rotated);
-    }
-
-    function getRotatedCells(piece) {
-      let cells = piece.cells.map(cell => [...cell]);
-      for (let i = 0; i < state.rotation; i += 1) {
-        cells = rotateCells(cells);
-      }
-      return normalizeCells(cells);
+      return normalizeCells(cells.map(([row, col]) => [col, -row]));
     }
 
     function getPiece(id) {
       return pieces.find(piece => piece.id === id);
     }
 
+    function getRotatedCells(piece, rotation = selectedRotation) {
+      let cells = piece.cells.map(cell => [...cell]);
+      for (let i = 0; i < rotation; i += 1) {
+        cells = rotateCells(cells);
+      }
+      return normalizeCells(cells);
+    }
+
     function isUsed(id) {
-      return state.placements.some(placement => placement.pieceId === id);
+      return placements.some(placement => placement.pieceId === id);
     }
 
     function setMessage(text, type = "normal") {
@@ -861,33 +844,21 @@
 
     function renderBoard() {
       board.innerHTML = "";
+
       for (let row = 0; row < boardSize; row += 1) {
         for (let col = 0; col < boardSize; col += 1) {
-          const cell = document.createElement("button");
-          cell.type = "button";
+          const cell = document.createElement("div");
           cell.className = "cell";
-          cell.setAttribute("aria-label", `Cel ${row + 1}, ${col + 1}`);
-          cell.dataset.row = row;
-          cell.dataset.col = col;
+          cell.dataset.row = String(row);
+          cell.dataset.col = String(col);
 
-          if (state.grid[row][col]) {
+          if (grid[row][col]) {
             cell.classList.add("filled");
           }
 
-          cell.addEventListener("click", () => placeSelectedPiece(row, col));
-          cell.addEventListener("dragover", event => {
-            event.preventDefault();
-            showHover(row, col);
-          });
-          cell.addEventListener("dragleave", clearHover);
-          cell.addEventListener("drop", event => {
-            event.preventDefault();
-            clearHover();
-            const id = event.dataTransfer.getData("text/plain");
-            if (id) {
-              selectPiece(id);
-              placeSelectedPiece(row, col);
-            }
+          cell.addEventListener("click", () => {
+            if (completed || drag) return;
+            placeSelectedPiece(row, col);
           });
 
           board.appendChild(cell);
@@ -904,24 +875,17 @@
         const card = document.createElement("div");
         card.className = "piece-card";
         card.dataset.id = piece.id;
-        card.draggable = !isUsed(piece.id);
 
-        if (state.selectedPieceId === piece.id) card.classList.add("selected");
+        if (selectedPieceId === piece.id) card.classList.add("selected");
         if (isUsed(piece.id)) card.classList.add("used");
 
+        card.addEventListener("pointerdown", event => startDrag(event, piece.id));
         card.addEventListener("click", () => selectPiece(piece.id));
-        card.addEventListener("dragstart", event => {
-          if (isUsed(piece.id)) {
-            event.preventDefault();
-            return;
-          }
-          selectPiece(piece.id);
-          event.dataTransfer.setData("text/plain", piece.id);
-        });
+        card.addEventListener("dblclick", () => rotatePiece(piece.id));
 
         const mini = document.createElement("div");
         mini.className = "mini-grid";
-        renderMiniShape(mini, piece.cells);
+        renderMiniShape(mini, getRotatedCells(piece, selectedPieceId === piece.id ? selectedRotation : 0));
 
         const text = document.createElement("div");
         text.innerHTML = `<div class="piece-title">${piece.name}</div><div class="piece-sub">${piece.sub}</div>`;
@@ -940,138 +904,289 @@
         for (let col = 0; col < 4; col += 1) {
           const cell = document.createElement("div");
           cell.className = "mini-cell";
-          if (occupied.has(`${row},${col}`)) {
-            cell.classList.add("on");
-          }
+          if (occupied.has(`${row},${col}`)) cell.classList.add("on");
           container.appendChild(cell);
         }
       }
     }
 
     function selectPiece(id) {
-      if (isUsed(id)) {
-        setMessage("Dit blokje zit al in je digitale moederbord. RAM eruit trekken terwijl hij draait is onverstandig.", "error");
-        return;
-      }
+      if (isUsed(id)) return;
 
-      state.selectedPieceId = id;
-      state.rotation = 0;
+      selectedPieceId = id;
+      if (!drag || drag.pieceId !== id) selectedRotation = selectedPieceId === id ? selectedRotation : 0;
+
       const piece = getPiece(id);
       selectedLabel.textContent = `${piece.name} geselecteerd`;
-      setMessage(`Plaats ${piece.name} op de RAM-bank. Klik op “Draai blokje” als hij dwarsligt.`);
+      setMessage(`Sleep ${piece.name} naar het bord of klik op een cel om hem te plaatsen.`);
       renderPieces();
     }
 
-    function canPlace(piece, startRow, startCol) {
-      const cells = getRotatedCells(piece);
-      return cells.every(([rowOffset, colOffset]) => {
-        const row = startRow + rowOffset;
-        const col = startCol + colOffset;
-        return row >= 0 && row < boardSize && col >= 0 && col < boardSize && !state.grid[row][col];
-      });
-    }
-
-    function placeSelectedPiece(row, col) {
-      if (state.completed) return;
-
-      if (!state.selectedPieceId) {
-        setMessage("Selecteer eerst een RAM-blokje. Zelfs goedkope RAM moet je ergens vandaan halen.", "error");
-        return;
-      }
-
-      const piece = getPiece(state.selectedPieceId);
-
-      if (!canPlace(piece, row, col)) {
-        setMessage("Deze RAM past daar niet. Probeer draaien, schuiven of zachtjes tegen het scherm praten.", "error");
-        return;
-      }
-
-      const cells = getRotatedCells(piece);
-      cells.forEach(([rowOffset, colOffset]) => {
-        state.grid[row + rowOffset][col + colOffset] = piece.id;
-      });
-
-      state.placements.push({
-        pieceId: piece.id,
-        startRow: row,
-        startCol: col,
-        rotation: state.rotation,
-        cells
-      });
-
-      state.selectedPieceId = null;
-      state.rotation = 0;
-      selectedLabel.textContent = "Geen blokje geselecteerd";
-      setMessage(`${piece.name} geplaatst. Je RAM voelt nu al goedkoper aan.`, "success");
-      renderBoard();
-      renderPieces();
-      checkWin();
-    }
-
-    function clearHover() {
-      document.querySelectorAll(".cell.hover-ok, .cell.hover-bad").forEach(cell => {
-        cell.classList.remove("hover-ok", "hover-bad");
-      });
-    }
-
-    function showHover(row, col) {
-      clearHover();
-      if (!state.selectedPieceId) return;
-
-      const piece = getPiece(state.selectedPieceId);
-      const ok = canPlace(piece, row, col);
-      const cells = getRotatedCells(piece);
-
-      cells.forEach(([rowOffset, colOffset]) => {
-        const targetRow = row + rowOffset;
-        const targetCol = col + colOffset;
-        const target = board.querySelector(`[data-row="${targetRow}"][data-col="${targetCol}"]`);
-        if (target) target.classList.add(ok ? "hover-ok" : "hover-bad");
-      });
-    }
-
-    function updateCounter() {
-      const filled = state.grid.flat().filter(Boolean).length;
-      filledCounter.textContent = `${filled}/${totalCells}`;
-    }
-
-    function checkWin() {
-      const filled = state.grid.flat().filter(Boolean).length;
-      const allPiecesUsed = pieces.every(piece => isUsed(piece.id));
-
-      if (filled === totalCells && allPiecesUsed) {
-        state.completed = true;
-        setMessage("RAM-bank succesvol gevuld. Download wordt voorbereid... heel betrouwbaar allemaal.", "success");
-        startFakeDownload();
-      }
-    }
-
-    function rotateSelectedPiece() {
-      if (!state.selectedPieceId) {
+    function rotatePiece(id = selectedPieceId) {
+      if (!id || isUsed(id)) {
         setMessage("Selecteer eerst een blokje om te draaien. RAM zonder richting is gewoon confetti.", "error");
         return;
       }
 
-      state.rotation = (state.rotation + 1) % 4;
-      const piece = getPiece(state.selectedPieceId);
+      selectedPieceId = id;
+      selectedRotation = (selectedRotation + 1) % 4;
+      const piece = getPiece(id);
+      selectedLabel.textContent = `${piece.name} gedraaid`;
       setMessage(`${piece.name} gedraaid. Nu past hij vast beter. Of slechter. Spannend.`);
+
+      if (drag && drag.pieceId === id) {
+        renderDragPreview(drag.preview, getRotatedCells(piece, selectedRotation));
+        updateDragPreview(drag.lastClientX, drag.lastClientY);
+      }
+
+      renderPieces();
+    }
+
+    function canPlace(piece, startRow, startCol, rotation = selectedRotation) {
+      const cells = getRotatedCells(piece, rotation);
+
+      return cells.every(([rowOffset, colOffset]) => {
+        const row = startRow + rowOffset;
+        const col = startCol + colOffset;
+        return row >= 0 && row < boardSize && col >= 0 && col < boardSize && !grid[row][col];
+      });
+    }
+
+    function placeSelectedPiece(row, col) {
+      if (completed) return false;
+
+      if (!selectedPieceId) {
+        setMessage("Selecteer of sleep eerst een RAM-blokje. Zelfs goedkope RAM moet ergens vandaan komen.", "error");
+        return false;
+      }
+
+      return placePiece(selectedPieceId, row, col, selectedRotation);
+    }
+
+    function placePiece(pieceId, row, col, rotation) {
+      const piece = getPiece(pieceId);
+
+      if (!piece || isUsed(pieceId)) return false;
+
+      if (!canPlace(piece, row, col, rotation)) {
+        setMessage("Deze RAM past daar niet. Groen is goed, rood is RAM-drama.", "error");
+        return false;
+      }
+
+      const cells = getRotatedCells(piece, rotation);
+      cells.forEach(([rowOffset, colOffset]) => {
+        grid[row + rowOffset][col + colOffset] = piece.id;
+      });
+
+      placements.push({
+        pieceId: piece.id,
+        startRow: row,
+        startCol: col,
+        rotation,
+        cells
+      });
+
+      selectedPieceId = null;
+      selectedRotation = 0;
+      selectedLabel.textContent = "Sleep een blokje naar het bord";
+      setMessage(`${piece.name} geplaatst. Je RAM voelt nu al goedkoper aan.`, "success");
+      clearBoardPreview();
+      renderBoard();
+      renderPieces();
+      checkWin();
+      return true;
+    }
+
+    function startDrag(event, pieceId) {
+      if (completed || isUsed(pieceId) || event.button !== 0) return;
+
+      const piece = getPiece(pieceId);
+      selectedPieceId = pieceId;
+      selectedRotation = selectedPieceId === pieceId ? selectedRotation : 0;
+
+      const source = event.currentTarget;
+      source.setPointerCapture(event.pointerId);
+      source.classList.add("dragging-source");
+
+      const preview = document.createElement("div");
+      preview.className = "drag-preview";
+      document.body.appendChild(preview);
+      renderDragPreview(preview, getRotatedCells(piece, selectedRotation));
+
+      drag = {
+        pointerId: event.pointerId,
+        pieceId,
+        source,
+        preview,
+        overCell: null,
+        lastClientX: event.clientX,
+        lastClientY: event.clientY,
+        moved: false
+      };
+
+      selectedLabel.textContent = `${piece.name} slepen`;
+      setMessage(`Laat ${piece.name} los op een groen vak. Druk tijdens het slepen op R om te draaien.`);
+      updateDragPreview(event.clientX, event.clientY);
+      renderPieces();
+
+      window.addEventListener("pointermove", handlePointerMove);
+      window.addEventListener("pointerup", handlePointerUp);
+      window.addEventListener("pointercancel", cancelDrag);
+    }
+
+    function renderDragPreview(container, cells) {
+      container.innerHTML = "";
+      const gridElement = document.createElement("div");
+      gridElement.className = "drag-grid";
+
+      const occupied = new Set(normalizeCells(cells).map(([row, col]) => `${row},${col}`));
+      for (let row = 0; row < 4; row += 1) {
+        for (let col = 0; col < 4; col += 1) {
+          const cell = document.createElement("div");
+          cell.className = "drag-cell";
+          if (occupied.has(`${row},${col}`)) cell.classList.add("on");
+          gridElement.appendChild(cell);
+        }
+      }
+
+      container.appendChild(gridElement);
+    }
+
+    function handlePointerMove(event) {
+      if (!drag || event.pointerId !== drag.pointerId) return;
+
+      drag.moved = true;
+      drag.lastClientX = event.clientX;
+      drag.lastClientY = event.clientY;
+      updateDragPreview(event.clientX, event.clientY);
+    }
+
+    function handlePointerUp(event) {
+      if (!drag || event.pointerId !== drag.pointerId) return;
+
+      const targetCell = getBoardCellFromPoint(event.clientX, event.clientY);
+      let placed = false;
+
+      if (targetCell) {
+        placed = placePiece(drag.pieceId, targetCell.row, targetCell.col, selectedRotation);
+      } else {
+        setMessage("Laat het blokje los op de RAM-bank. De vloer heeft helaas geen DDR5-slot.", "error");
+      }
+
+      endDrag(placed);
+    }
+
+    function cancelDrag() {
+      endDrag(false);
+      setMessage("RAM-installatie geannuleerd. Er is niets ontploft.");
+    }
+
+    function endDrag(placed) {
+      if (!drag) return;
+
+      clearBoardPreview();
+      drag.source.classList.remove("dragging-source");
+      drag.preview.remove();
+
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener("pointercancel", cancelDrag);
+
+      const lastPieceId = drag.pieceId;
+      drag = null;
+
+      if (!placed && selectedPieceId === lastPieceId) {
+        const piece = getPiece(lastPieceId);
+        selectedLabel.textContent = `${piece.name} geselecteerd`;
+      }
+
+      renderPieces();
+    }
+
+    function updateDragPreview(clientX, clientY) {
+      if (!drag) return;
+
+      drag.preview.style.left = `${clientX}px`;
+      drag.preview.style.top = `${clientY}px`;
+
+      const targetCell = getBoardCellFromPoint(clientX, clientY);
+      drag.overCell = targetCell;
+      showBoardPreview(targetCell);
+    }
+
+    function getBoardCellFromPoint(clientX, clientY) {
+      const rect = board.getBoundingClientRect();
+      if (clientX < rect.left || clientX > rect.right || clientY < rect.top || clientY > rect.bottom) return null;
+
+      const gap = parseFloat(getComputedStyle(board).gap) || 0;
+      const cellSize = (rect.width - gap * (boardSize - 1)) / boardSize;
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+      const col = Math.floor(x / (cellSize + gap));
+      const row = Math.floor(y / (cellSize + gap));
+
+      if (row < 0 || row >= boardSize || col < 0 || col >= boardSize) return null;
+
+      const localX = x - col * (cellSize + gap);
+      const localY = y - row * (cellSize + gap);
+      if (localX > cellSize || localY > cellSize) return null;
+
+      return { row, col };
+    }
+
+    function showBoardPreview(targetCell) {
+      clearBoardPreview();
+      if (!targetCell || !selectedPieceId) return;
+
+      const piece = getPiece(selectedPieceId);
+      const ok = canPlace(piece, targetCell.row, targetCell.col, selectedRotation);
+      const cells = getRotatedCells(piece, selectedRotation);
+
+      cells.forEach(([rowOffset, colOffset]) => {
+        const row = targetCell.row + rowOffset;
+        const col = targetCell.col + colOffset;
+        const cell = board.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+        if (cell) cell.classList.add(ok ? "preview-ok" : "preview-bad");
+      });
+    }
+
+    function clearBoardPreview() {
+      board.querySelectorAll(".preview-ok, .preview-bad").forEach(cell => {
+        cell.classList.remove("preview-ok", "preview-bad");
+      });
+    }
+
+    function updateCounter() {
+      const filled = grid.flat().filter(Boolean).length;
+      filledCounter.textContent = `${filled}/${totalCells}`;
+    }
+
+    function checkWin() {
+      const filled = grid.flat().filter(Boolean).length;
+      const allPiecesUsed = pieces.every(piece => isUsed(piece.id));
+
+      if (filled === totalCells && allPiecesUsed) {
+        completed = true;
+        setMessage("RAM-bank succesvol gevuld. Download wordt voorbereid... heel betrouwbaar allemaal.", "success");
+        window.setTimeout(startFakeDownload, 500);
+      }
     }
 
     function undoLastPlacement() {
-      if (state.completed) return;
+      if (completed) return;
 
-      const last = state.placements.pop();
+      const last = placements.pop();
       if (!last) {
         setMessage("Er is nog niks geplaatst. Dat is ook een soort cable management.", "error");
         return;
       }
 
       last.cells.forEach(([rowOffset, colOffset]) => {
-        state.grid[last.startRow + rowOffset][last.startCol + colOffset] = null;
+        grid[last.startRow + rowOffset][last.startCol + colOffset] = null;
       });
 
-      state.selectedPieceId = last.pieceId;
-      state.rotation = last.rotation;
+      selectedPieceId = last.pieceId;
+      selectedRotation = last.rotation;
       const piece = getPiece(last.pieceId);
       selectedLabel.textContent = `${piece.name} geselecteerd`;
       setMessage(`${piece.name} teruggehaald. Tweede kans voor de RAM-installatie.`);
@@ -1080,13 +1195,14 @@
     }
 
     function resetGame() {
-      if (state.completed) return;
+      if (completed) return;
 
-      state.grid = Array.from({ length: boardSize }, () => Array(boardSize).fill(null));
-      state.selectedPieceId = null;
-      state.rotation = 0;
-      state.placements = [];
-      selectedLabel.textContent = "Geen blokje geselecteerd";
+      grid = createEmptyGrid();
+      selectedPieceId = null;
+      selectedRotation = 0;
+      placements = [];
+      clearBoardPreview();
+      selectedLabel.textContent = "Sleep een blokje naar het bord";
       setMessage("RAM-bank gereset. Alle bits liggen weer op de grond.");
       renderBoard();
       renderPieces();
@@ -1098,7 +1214,7 @@
 
       const lines = [
         "> checking motherboard vibes...",
-        "> compressing 256GB into browser cache...",
+        "> compressing 64GB into browser cache...",
         "> asking Windows politely for more memory...",
         "> downloading RGB packets...",
         "> verifying cheapness checksum...",
@@ -1124,12 +1240,22 @@
       }, 260);
     }
 
-    rotateButton.addEventListener("click", rotateSelectedPiece);
+    rotateButton.addEventListener("click", () => rotatePiece());
     resetButton.addEventListener("click", resetGame);
     undoButton.addEventListener("click", undoLastPlacement);
     panicButton.addEventListener("click", () => {
       setMessage("Spoedmodus actief: helaas moet zelfs nood-RAM eerst door de puzzelcommissie.");
       document.getElementById("game").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    window.addEventListener("keydown", event => {
+      if (event.key.toLowerCase() === "r") {
+        rotatePiece();
+      }
+
+      if (event.key === "Escape" && drag) {
+        cancelDrag();
+      }
     });
 
     renderBoard();
