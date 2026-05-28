@@ -565,6 +565,56 @@
     .drag-preview.board-mode .drag-cell.on {
       border-radius: 10px;
     }
+    .rickroll-overlay {
+      position: fixed;
+      inset: 0;
+      display: none;
+      place-items: center;
+      padding: 24px;
+      background: rgba(0, 0, 0, 0.92);
+      z-index: 99999;
+      overflow: hidden;
+    }
+
+    .rickroll-overlay.show {
+      display: grid;
+    }
+
+    .rickroll-gif {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+      z-index: 1;
+    }
+
+    .rickroll-card {
+      position: relative;
+      z-index: 2;
+      width: min(460px, 100%);
+      padding: 24px;
+      border-radius: 24px;
+      text-align: center;
+      background: rgba(8, 10, 15, 0.58);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      box-shadow: 0 24px 80px rgba(0, 0, 0, 0.48);
+      backdrop-filter: blur(10px);
+    }
+
+    .rickroll-card h2 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      letter-spacing: -0.05em;
+    }
+
+    .rickroll-card p {
+      margin: 0 0 16px;
+      color: rgba(255, 255, 255, 0.76);
+      line-height: 1.5;
+    }
+
+
 
     .download-overlay {
       position: fixed;
@@ -833,6 +883,20 @@
       <div class="terminal" id="terminal">&gt; checking motherboard vibes...</div>
     </div>
   </div>
+  <div class="rickroll-overlay" id="rickrollOverlay" role="dialog" aria-modal="true" aria-labelledby="rickrollTitle">
+    <img src="rickroll.gif" alt="Rickroll" class="rickroll-gif" />
+    <div class="rickroll-card">
+      <h2 id="rickrollTitle">RAM download complete</h2>
+      <p>Your browser has been upgraded with premium meme memory.</p>
+      <button type="button" id="playRickrollButton">Click if audio did not start</button>
+    </div>
+    <audio id="rickrollAudio" loop>
+      <source src="rickroll.mp3" type="audio/mpeg" />
+      Your browser does not support audio. Sadly, no Rick Roll for you.
+    </audio>
+  </div>
+
+
 
   <script>
     const redirectUrl = "https://memes.justinverstijnen.nl/rickroll/";
@@ -884,6 +948,9 @@
     const progressText = document.getElementById("progressText");
     const terminal = document.getElementById("terminal");
     const downloadText = document.getElementById("downloadText");
+    const rickrollOverlay = document.getElementById("rickrollOverlay");
+    const rickrollAudio = document.getElementById("rickrollAudio");
+    const playRickrollButton = document.getElementById("playRickrollButton");
 
     let grid = createEmptyGrid();
     let selectedPieceId = null;
@@ -1343,8 +1410,8 @@
 
       if (filled === totalCells && allPiecesUsed) {
         completed = true;
-        setMessage("RAM bank successfully filled. Preparing download... extremely trustworthy behavior.", "success");
-        window.setTimeout(startFakeDownload, 500);
+        setMessage("RAM bank successfully filled. Launching the totally legitimate RAM download...", "success");
+        startRickroll();
       }
     }
 
@@ -1393,6 +1460,16 @@
       );
       renderBoard();
     }
+    function startRickroll() {
+      rickrollOverlay.classList.add("show");
+
+      const playPromise = rickrollAudio.play();
+      if (playPromise && typeof playPromise.catch === "function") {
+        playPromise.catch(() => {
+          setMessage("The browser blocked autoplay. The big button on the meme screen starts the audio.", "error");
+        });
+      }
+    }
 
     function startFakeDownload() {
       downloadOverlay.classList.add("show");
@@ -1420,11 +1497,17 @@
           downloadText.textContent = "Download complete. Installing RAM into your browser...";
           terminal.textContent += "\n> success: definitely not a rickroll";
           window.setTimeout(() => {
-            window.location.href = redirectUrl;
+            startRickroll();
           }, 900);
         }
       }, 260);
     }
+
+    playRickrollButton.addEventListener("click", () => {
+      rickrollAudio.play().catch(() => {
+        setMessage("Audio could not be started. Check whether the browser is blocking media playback.", "error");
+      });
+    });
 
     rotateButton.addEventListener("click", () => rotatePiece());
     hintButton.addEventListener("click", toggleHints);
