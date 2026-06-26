@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Gratis fan voor verkoeling - justinverstijnen.nl</title>
+  <title>Ventilator</title>
 
   <style>
     :root {
@@ -15,6 +15,7 @@
       --blue-dark: #0f79b8;
       --shadow: rgba(15, 121, 184, 0.25);
       --fan-speed: 0.85s;
+      --fan-play-state: running;
       --wind-speed: 1.2s;
       --wind-opacity: 0.9;
     }
@@ -66,6 +67,7 @@
       z-index: 1;
       pointer-events: none;
       opacity: var(--wind-opacity);
+      transition: opacity 180ms ease;
     }
 
     .wind-line {
@@ -215,6 +217,7 @@
       transform-origin: 250px 250px;
       transform-box: view-box;
       animation: spin var(--fan-speed) linear infinite;
+      animation-play-state: var(--fan-play-state);
       will-change: transform;
     }
 
@@ -247,6 +250,7 @@
       justify-content: center;
       z-index: 10;
       animation: centerSpin var(--fan-speed) linear infinite;
+      animation-play-state: var(--fan-play-state);
       will-change: transform;
     }
 
@@ -457,7 +461,6 @@
           />
 
           <g class="fan-rotor">
-            <!-- grotere bladen -->
             <path
               d="M250 250 C302 184, 392 160, 432 206 C458 236, 431 291, 365 303 C313 313, 276 292, 250 250 Z"
               fill="url(#bladeGradient)"
@@ -551,7 +554,7 @@
       <input
         id="speedControl"
         type="range"
-        min="1"
+        min="0"
         max="10"
         step="1"
         value="5"
@@ -579,10 +582,19 @@
     function setFanVisualSpeed(value) {
       const speed = Number(value);
 
+      if (speed === 0) {
+        root.style.setProperty("--fan-play-state", "paused");
+        root.style.setProperty("--wind-opacity", "0");
+        root.style.setProperty("--fan-speed", "1.7s");
+        root.style.setProperty("--wind-speed", "1.8s");
+        return;
+      }
+
       const fanDuration = 1.7 - speed * 0.145;
       const windDuration = 1.8 - speed * 0.105;
       const windOpacity = 0.35 + speed * 0.065;
 
+      root.style.setProperty("--fan-play-state", "running");
       root.style.setProperty("--fan-speed", `${fanDuration.toFixed(3)}s`);
       root.style.setProperty("--wind-speed", `${windDuration.toFixed(3)}s`);
       root.style.setProperty("--wind-opacity", windOpacity.toFixed(2));
@@ -609,6 +621,7 @@
         if (audioContext && audioContext.state === "suspended") {
           audioContext.resume();
         }
+
         return;
       }
 
@@ -694,13 +707,14 @@
 
       const now = audioContext.currentTime;
 
-      const targetVolume = isMuted ? 0 : 0.08 + currentSpeed * 0.018;
+      const isStopped = currentSpeed === 0;
+      const targetVolume = isStopped || isMuted ? 0 : 0.08 + currentSpeed * 0.018;
       const targetNoiseFrequency = 420 + currentSpeed * 135;
-      const targetPlaybackRate = 0.75 + currentSpeed * 0.09;
+      const targetPlaybackRate = currentSpeed === 0 ? 0.75 : 0.75 + currentSpeed * 0.09;
       const targetHumFrequency = 54 + currentSpeed * 7;
-      const targetHumGain = isMuted ? 0 : 0.012 + currentSpeed * 0.004;
+      const targetHumGain = isStopped || isMuted ? 0 : 0.012 + currentSpeed * 0.004;
       const targetLfoFrequency = 2.1 + currentSpeed * 0.38;
-      const targetLfoGain = isMuted ? 0 : 0.018 + currentSpeed * 0.004;
+      const targetLfoGain = isStopped || isMuted ? 0 : 0.018 + currentSpeed * 0.004;
 
       masterGain.gain.cancelScheduledValues(now);
       masterGain.gain.setTargetAtTime(targetVolume, now, 0.08);
