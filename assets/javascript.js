@@ -56,6 +56,13 @@ const items = [
     "icon": "🎤"
   },
   {
+    "title": "Fan",
+    "description": "Some cooling for you",
+    "url": "fan/index.html",
+    "image": "fan/fan.png",
+    "icon": "🎤"
+  },
+  {
     "title": "Cheap ram",
     "description": "Simple tool to download more RAM for your computer.",
     "url": "cheapram/index.html",
