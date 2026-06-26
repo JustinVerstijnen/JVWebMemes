@@ -8,14 +8,15 @@
   <style>
     :root {
       --bg-1: #eaf8ff;
-      --bg-2: #c8efff;
-      --blue-1: #dff7ff;
-      --blue-2: #a9e6fb;
-      --blue-3: #4ab8e8;
-      --blue-4: #147eb8;
-      --dark-blue: #12384f;
+      --bg-2: #c4efff;
+      --blue-light: #dff8ff;
+      --blue-mid: #8bdcf6;
+      --blue-main: #38aee5;
+      --blue-dark: #0f79b8;
       --shadow: rgba(15, 121, 184, 0.25);
-      --speed: 0s;
+      --fan-speed: 0.85s;
+      --wind-speed: 1.2s;
+      --wind-opacity: 0.9;
     }
 
     * {
@@ -25,330 +26,281 @@
     html,
     body {
       margin: 0;
+      width: 100%;
       min-height: 100%;
     }
 
     body {
       min-height: 100vh;
-      background:
-        radial-gradient(circle at top left, rgba(255,255,255,0.95), transparent 36%),
-        linear-gradient(135deg, var(--bg-1), var(--bg-2));
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
       font-family: Arial, sans-serif;
+      background:
+        radial-gradient(circle at 15% 15%, rgba(255,255,255,0.95), transparent 32%),
+        radial-gradient(circle at 85% 20%, rgba(255,255,255,0.55), transparent 28%),
+        linear-gradient(135deg, var(--bg-1), var(--bg-2));
     }
 
-    body.speed-0 {
-      --speed: 0s;
-    }
-
-    body.speed-1 {
-      --speed: 1.4s;
-    }
-
-    body.speed-2 {
-      --speed: 0.7s;
-    }
-
-    body.speed-3 {
-      --speed: 0.32s;
-    }
-
-    .wrapper {
-      width: min(560px, 92vw);
+    .app {
+      width: min(620px, 94vw);
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      gap: 32px;
+      gap: 24px;
     }
 
-    .fan-scene {
+    .fan-area {
       position: relative;
-      width: min(500px, 86vw);
-      height: min(560px, 96vw);
+      width: min(560px, 92vw);
+      height: min(620px, 98vw);
       display: flex;
       align-items: center;
       justify-content: center;
     }
 
-    .wind {
+    .wind-layer {
       position: absolute;
       inset: 0;
+      z-index: 1;
       pointer-events: none;
-      opacity: 0;
-      transition: opacity 200ms ease;
-      z-index: 0;
+      opacity: var(--wind-opacity);
     }
 
-    body.speed-1 .wind,
-    body.speed-2 .wind,
-    body.speed-3 .wind {
-      opacity: 1;
-    }
-
-    .wind span {
+    .wind-line {
       position: absolute;
-      left: 58%;
-      height: 9px;
+      left: 55%;
+      height: 8px;
       border-radius: 999px;
       background: linear-gradient(
         90deg,
-        rgba(57, 174, 229, 0.45),
-        rgba(57, 174, 229, 0)
+        rgba(56, 174, 229, 0.58),
+        rgba(56, 174, 229, 0.25),
+        rgba(56, 174, 229, 0)
       );
-      animation: windMove 1.5s linear infinite;
+      filter: blur(0.15px);
+      animation: windLineMove var(--wind-speed) linear infinite;
       opacity: 0;
     }
 
-    .wind span:nth-child(1) {
-      top: 30%;
-      width: 140px;
-      animation-delay: 0s;
+    .wind-line:nth-child(1) {
+      top: 19%;
+      width: 130px;
+      animation-delay: -0.1s;
     }
 
-    .wind span:nth-child(2) {
-      top: 42%;
+    .wind-line:nth-child(2) {
+      top: 27%;
+      width: 215px;
+      animation-delay: -0.35s;
+    }
+
+    .wind-line:nth-child(3) {
+      top: 36%;
+      width: 170px;
+      animation-delay: -0.62s;
+    }
+
+    .wind-line:nth-child(4) {
+      top: 46%;
+      width: 245px;
+      animation-delay: -0.86s;
+    }
+
+    .wind-line:nth-child(5) {
+      top: 56%;
       width: 190px;
-      animation-delay: 0.25s;
+      animation-delay: -1.05s;
     }
 
-    .wind span:nth-child(3) {
-      top: 54%;
-      width: 160px;
-      animation-delay: 0.5s;
-    }
-
-    .wind span:nth-child(4) {
+    .wind-line:nth-child(6) {
       top: 66%;
-      width: 125px;
-      animation-delay: 0.75s;
+      width: 230px;
+      animation-delay: -1.28s;
     }
 
-    body.speed-2 .wind span {
-      animation-duration: 1s;
+    .wind-line:nth-child(7) {
+      top: 76%;
+      width: 145px;
+      animation-delay: -1.52s;
     }
 
-    body.speed-3 .wind span {
-      animation-duration: 0.7s;
+    .wind-dot {
+      position: absolute;
+      left: 57%;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: rgba(56, 174, 229, 0.34);
+      animation: windDotMove calc(var(--wind-speed) * 1.15) linear infinite;
+      opacity: 0;
     }
 
-    @keyframes windMove {
+    .wind-dot:nth-child(8) {
+      top: 31%;
+      animation-delay: -0.2s;
+    }
+
+    .wind-dot:nth-child(9) {
+      top: 49%;
+      animation-delay: -0.75s;
+    }
+
+    .wind-dot:nth-child(10) {
+      top: 62%;
+      animation-delay: -1.15s;
+    }
+
+    .wind-dot:nth-child(11) {
+      top: 72%;
+      animation-delay: -1.55s;
+    }
+
+    @keyframes windLineMove {
       0% {
-        transform: translateX(-20px) scaleX(0.6);
+        transform: translateX(-25px) scaleX(0.35);
+        opacity: 0;
+      }
+
+      16% {
+        opacity: 0.9;
+      }
+
+      72% {
+        opacity: 0.55;
+      }
+
+      100% {
+        transform: translateX(190px) scaleX(1.25);
+        opacity: 0;
+      }
+    }
+
+    @keyframes windDotMove {
+      0% {
+        transform: translateX(-20px) translateY(0) scale(0.7);
         opacity: 0;
       }
 
       20% {
-        opacity: 0.75;
+        opacity: 0.65;
       }
 
       100% {
-        transform: translateX(130px) scaleX(1.1);
+        transform: translateX(210px) translateY(-18px) scale(1.3);
         opacity: 0;
       }
     }
 
-    .fan-head {
+    .fan-wrapper {
       position: absolute;
-      top: 5%;
+      top: 20px;
       left: 50%;
-      width: 82%;
-      aspect-ratio: 1 / 1;
+      width: min(470px, 86vw);
+      height: min(470px, 86vw);
       transform: translateX(-50%);
-      border-radius: 50%;
-      background:
-        radial-gradient(circle, rgba(255,255,255,0.98) 0 25%, transparent 26%),
-        radial-gradient(circle, rgba(185,236,255,0.38) 0 55%, transparent 56%),
-        linear-gradient(145deg, rgba(255,255,255,0.95), rgba(127,211,245,0.45));
-      border: 12px solid rgba(255, 255, 255, 0.8);
-      box-shadow:
-        inset 0 0 0 7px rgba(15, 121, 184, 0.12),
-        inset 0 0 0 22px rgba(255, 255, 255, 0.3),
-        0 30px 70px var(--shadow);
-      z-index: 2;
-      overflow: hidden;
+      z-index: 3;
+      filter: drop-shadow(0 32px 40px var(--shadow));
     }
 
-    .fan-head::before,
-    .fan-head::after {
-      content: "";
-      position: absolute;
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 4;
+    .fan-svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+      overflow: visible;
     }
 
-    .fan-head::before {
-      inset: 8%;
-      border: 2px solid rgba(15, 121, 184, 0.14);
-    }
-
-    .fan-head::after {
-      inset: 20%;
-      border: 3px solid rgba(15, 121, 184, 0.16);
-    }
-
-    .grill-line {
-      position: absolute;
-      top: -2%;
-      left: 50%;
-      width: 2px;
-      height: 104%;
-      background: linear-gradient(
-        to bottom,
-        transparent 4%,
-        rgba(15, 121, 184, 0.14) 12%,
-        rgba(15, 121, 184, 0.14) 88%,
-        transparent 96%
-      );
-      transform-origin: center;
-      z-index: 5;
-    }
-
-    .grill-line:nth-child(1) { transform: translateX(-50%) rotate(0deg); }
-    .grill-line:nth-child(2) { transform: translateX(-50%) rotate(15deg); }
-    .grill-line:nth-child(3) { transform: translateX(-50%) rotate(30deg); }
-    .grill-line:nth-child(4) { transform: translateX(-50%) rotate(45deg); }
-    .grill-line:nth-child(5) { transform: translateX(-50%) rotate(60deg); }
-    .grill-line:nth-child(6) { transform: translateX(-50%) rotate(75deg); }
-    .grill-line:nth-child(7) { transform: translateX(-50%) rotate(90deg); }
-    .grill-line:nth-child(8) { transform: translateX(-50%) rotate(105deg); }
-    .grill-line:nth-child(9) { transform: translateX(-50%) rotate(120deg); }
-    .grill-line:nth-child(10) { transform: translateX(-50%) rotate(135deg); }
-    .grill-line:nth-child(11) { transform: translateX(-50%) rotate(150deg); }
-    .grill-line:nth-child(12) { transform: translateX(-50%) rotate(165deg); }
-
-    .rotor {
-      position: absolute;
-      inset: 19%;
-      border-radius: 50%;
-      z-index: 2;
-      animation: spin var(--speed) linear infinite;
-      animation-play-state: paused;
-    }
-
-    body.speed-1 .rotor,
-    body.speed-2 .rotor,
-    body.speed-3 .rotor {
-      animation-play-state: running;
+    .fan-rotor {
+      transform-origin: 250px 250px;
+      transform-box: view-box;
+      animation: spin var(--fan-speed) linear infinite;
+      will-change: transform;
     }
 
     @keyframes spin {
       from {
-        rotate: 0deg;
+        transform: rotate(0deg);
       }
 
       to {
-        rotate: 360deg;
+        transform: rotate(360deg);
       }
     }
 
-    .blade {
+    .center-logo {
       position: absolute;
       top: 50%;
       left: 50%;
-      width: 42%;
-      height: 24%;
-      border-radius: 100% 18% 100% 28%;
-      background:
-        radial-gradient(circle at 28% 45%, rgba(255,255,255,0.9), transparent 34%),
-        linear-gradient(135deg, rgba(210,247,255,0.96), rgba(57,174,229,0.88));
-      box-shadow:
-        inset -10px -8px 18px rgba(15, 121, 184, 0.18),
-        inset 8px 7px 14px rgba(255, 255, 255, 0.5);
-      transform-origin: 0 50%;
-    }
-
-    .blade:nth-child(1) {
-      transform: rotate(0deg) translate(18%, -50%) skewX(-10deg);
-    }
-
-    .blade:nth-child(2) {
-      transform: rotate(90deg) translate(18%, -50%) skewX(-10deg);
-    }
-
-    .blade:nth-child(3) {
-      transform: rotate(180deg) translate(18%, -50%) skewX(-10deg);
-    }
-
-    .blade:nth-child(4) {
-      transform: rotate(270deg) translate(18%, -50%) skewX(-10deg);
-    }
-
-    .hub {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 30%;
-      aspect-ratio: 1 / 1;
+      width: 116px;
+      height: 116px;
       transform: translate(-50%, -50%);
       border-radius: 50%;
       background:
-        radial-gradient(circle at 35% 28%, #ffffff, #def7ff 44%, #8edaf7 100%);
+        radial-gradient(circle at 35% 25%, #ffffff, #e5f9ff 44%, #8ddaf7 100%);
       border: 8px solid rgba(255,255,255,0.92);
       box-shadow:
-        inset 0 -10px 25px rgba(15, 121, 184, 0.18),
-        0 14px 30px rgba(15, 121, 184, 0.26);
+        inset 0 -10px 24px rgba(15, 121, 184, 0.18),
+        0 14px 30px rgba(15, 121, 184, 0.25);
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 6;
+      z-index: 10;
     }
 
-    .hub img {
-      width: 68%;
-      height: 68%;
+    .center-logo img {
+      width: 70%;
+      height: 70%;
       object-fit: contain;
       display: block;
-      pointer-events: none;
       user-select: none;
+      pointer-events: none;
     }
 
     .stand {
       position: absolute;
-      top: 71%;
+      top: 445px;
       left: 50%;
-      width: 16%;
-      height: 23%;
+      width: 78px;
+      height: 140px;
       transform: translateX(-50%);
       border-radius: 999px;
-      background: linear-gradient(90deg, #78cef0, #e0f8ff 50%, #5fc0e7);
-      box-shadow: inset 0 0 16px rgba(15, 121, 184, 0.2);
-      z-index: 1;
+      background: linear-gradient(90deg, #69c8ec, #e5f9ff 50%, #54bce7);
+      box-shadow:
+        inset 0 0 20px rgba(15, 121, 184, 0.22),
+        0 18px 28px rgba(15, 121, 184, 0.12);
+      z-index: 2;
     }
 
     .base {
       position: absolute;
+      top: 555px;
       left: 50%;
-      bottom: 3%;
-      width: 48%;
-      height: 10%;
+      width: 270px;
+      height: 66px;
       transform: translateX(-50%);
       border-radius: 50%;
-      background: linear-gradient(180deg, #dff7ff, #72cceb);
+      background: linear-gradient(180deg, #e2f8ff, #70cbed);
       box-shadow:
-        inset 0 -10px 25px rgba(15, 121, 184, 0.18),
-        0 20px 35px rgba(15, 121, 184, 0.2);
-      z-index: 1;
+        inset 0 -13px 24px rgba(15, 121, 184, 0.18),
+        0 22px 34px rgba(15, 121, 184, 0.18);
+      z-index: 2;
     }
 
     .controls {
-      width: min(320px, 76vw);
-      padding: 16px 20px;
+      width: min(360px, 82vw);
+      padding: 18px 22px;
       border-radius: 999px;
-      background: rgba(255,255,255,0.58);
+      background: rgba(255,255,255,0.62);
+      border: 1px solid rgba(255,255,255,0.85);
       backdrop-filter: blur(14px);
       box-shadow: 0 18px 45px rgba(15, 121, 184, 0.16);
-      border: 1px solid rgba(255,255,255,0.76);
     }
 
     input[type="range"] {
       width: 100%;
-      accent-color: var(--blue-4);
       cursor: pointer;
+      accent-color: var(--blue-dark);
     }
 
     .sr-only {
@@ -364,60 +316,179 @@
     }
 
     @media (max-width: 620px) {
-      .wrapper {
-        gap: 22px;
+      .fan-area {
+        height: 560px;
       }
 
-      .fan-scene {
-        height: min(510px, 98vw);
+      .stand {
+        top: 405px;
+        height: 125px;
       }
 
-      .wind span {
-        max-width: 110px;
+      .base {
+        top: 505px;
+        width: 230px;
+      }
+
+      .center-logo {
+        width: 96px;
+        height: 96px;
+      }
+
+      .wind-line {
+        max-width: 150px;
       }
     }
 
     @media (prefers-reduced-motion: reduce) {
-      .rotor,
-      .wind span {
+      .fan-rotor,
+      .wind-line,
+      .wind-dot {
         animation: none !important;
       }
     }
   </style>
 </head>
 
-<body class="speed-0">
-  <main class="wrapper">
-    <section class="fan-scene" aria-label="Ventilator">
-      <div class="wind" aria-hidden="true">
-        <span></span>
-        <span></span>
-        <span></span>
-        <span></span>
+<body>
+  <main class="app">
+    <section class="fan-area" aria-label="Ventilator">
+      <div class="wind-layer" aria-hidden="true">
+        <span class="wind-line"></span>
+        <span class="wind-line"></span>
+        <span class="wind-line"></span>
+        <span class="wind-line"></span>
+        <span class="wind-line"></span>
+        <span class="wind-line"></span>
+        <span class="wind-line"></span>
+
+        <span class="wind-dot"></span>
+        <span class="wind-dot"></span>
+        <span class="wind-dot"></span>
+        <span class="wind-dot"></span>
       </div>
 
-      <div class="fan-head">
-        <span class="grill-line"></span>
-        <span class="grill-line"></span>
-        <span class="grill-line"></span>
-        <span class="grill-line"></span>
-        <span class="grill-line"></span>
-        <span class="grill-line"></span>
-        <span class="grill-line"></span>
-        <span class="grill-line"></span>
-        <span class="grill-line"></span>
-        <span class="grill-line"></span>
-        <span class="grill-line"></span>
-        <span class="grill-line"></span>
+      <div class="fan-wrapper">
+        <svg class="fan-svg" viewBox="0 0 500 500" role="img" aria-label="Moderne lichtblauwe ventilator">
+          <defs>
+            <radialGradient id="fanBodyGradient" cx="36%" cy="28%" r="70%">
+              <stop offset="0%" stop-color="#ffffff" />
+              <stop offset="48%" stop-color="#ddf7ff" />
+              <stop offset="100%" stop-color="#8edbf7" />
+            </radialGradient>
 
-        <div class="rotor" aria-hidden="true">
-          <span class="blade"></span>
-          <span class="blade"></span>
-          <span class="blade"></span>
-          <span class="blade"></span>
-        </div>
+            <linearGradient id="bladeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#f3fcff" />
+              <stop offset="42%" stop-color="#b9ecff" />
+              <stop offset="100%" stop-color="#38aee5" />
+            </linearGradient>
 
-        <div class="hub">
+            <linearGradient id="grillGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#ffffff" stop-opacity="0.9" />
+              <stop offset="100%" stop-color="#0f79b8" stop-opacity="0.26" />
+            </linearGradient>
+
+            <filter id="softShadow" x="-30%" y="-30%" width="160%" height="160%">
+              <feDropShadow dx="0" dy="18" stdDeviation="15" flood-color="#0f79b8" flood-opacity="0.23" />
+            </filter>
+          </defs>
+
+          <circle
+            cx="250"
+            cy="250"
+            r="226"
+            fill="url(#fanBodyGradient)"
+            stroke="rgba(255,255,255,0.88)"
+            stroke-width="18"
+            filter="url(#softShadow)"
+          />
+
+          <circle
+            cx="250"
+            cy="250"
+            r="199"
+            fill="none"
+            stroke="rgba(15,121,184,0.14)"
+            stroke-width="5"
+          />
+
+          <circle
+            cx="250"
+            cy="250"
+            r="151"
+            fill="none"
+            stroke="rgba(15,121,184,0.13)"
+            stroke-width="4"
+          />
+
+          <g class="fan-rotor">
+            <path
+              d="M250 250 C292 198, 366 174, 397 210 C420 237, 395 276, 344 286 C304 294, 274 280, 250 250 Z"
+              fill="url(#bladeGradient)"
+              opacity="0.94"
+            />
+
+            <path
+              d="M250 250 C302 292, 326 366, 290 397 C263 420, 224 395, 214 344 C206 304, 220 274, 250 250 Z"
+              fill="url(#bladeGradient)"
+              opacity="0.94"
+            />
+
+            <path
+              d="M250 250 C208 302, 134 326, 103 290 C80 263, 105 224, 156 214 C196 206, 226 220, 250 250 Z"
+              fill="url(#bladeGradient)"
+              opacity="0.94"
+            />
+
+            <path
+              d="M250 250 C198 208, 174 134, 210 103 C237 80, 276 105, 286 156 C294 196, 280 226, 250 250 Z"
+              fill="url(#bladeGradient)"
+              opacity="0.94"
+            />
+
+            <circle
+              cx="250"
+              cy="250"
+              r="42"
+              fill="rgba(255,255,255,0.35)"
+            />
+          </g>
+
+          <g opacity="0.68">
+            <line x1="250" y1="28" x2="250" y2="472" stroke="url(#grillGradient)" stroke-width="3" />
+            <line x1="250" y1="28" x2="250" y2="472" stroke="url(#grillGradient)" stroke-width="3" transform="rotate(15 250 250)" />
+            <line x1="250" y1="28" x2="250" y2="472" stroke="url(#grillGradient)" stroke-width="3" transform="rotate(30 250 250)" />
+            <line x1="250" y1="28" x2="250" y2="472" stroke="url(#grillGradient)" stroke-width="3" transform="rotate(45 250 250)" />
+            <line x1="250" y1="28" x2="250" y2="472" stroke="url(#grillGradient)" stroke-width="3" transform="rotate(60 250 250)" />
+            <line x1="250" y1="28" x2="250" y2="472" stroke="url(#grillGradient)" stroke-width="3" transform="rotate(75 250 250)" />
+            <line x1="250" y1="28" x2="250" y2="472" stroke="url(#grillGradient)" stroke-width="3" transform="rotate(90 250 250)" />
+            <line x1="250" y1="28" x2="250" y2="472" stroke="url(#grillGradient)" stroke-width="3" transform="rotate(105 250 250)" />
+            <line x1="250" y1="28" x2="250" y2="472" stroke="url(#grillGradient)" stroke-width="3" transform="rotate(120 250 250)" />
+            <line x1="250" y1="28" x2="250" y2="472" stroke="url(#grillGradient)" stroke-width="3" transform="rotate(135 250 250)" />
+            <line x1="250" y1="28" x2="250" y2="472" stroke="url(#grillGradient)" stroke-width="3" transform="rotate(150 250 250)" />
+            <line x1="250" y1="28" x2="250" y2="472" stroke="url(#grillGradient)" stroke-width="3" transform="rotate(165 250 250)" />
+          </g>
+
+          <circle
+            cx="250"
+            cy="250"
+            r="226"
+            fill="none"
+            stroke="rgba(255,255,255,0.75)"
+            stroke-width="12"
+          />
+
+          <circle
+            cx="250"
+            cy="250"
+            r="219"
+            fill="none"
+            stroke="rgba(15,121,184,0.13)"
+            stroke-width="5"
+          />
+        </svg>
+
+        <div class="center-logo">
           <img
             src="https://sajvwebsiteblobstorage.blob.core.windows.net/blog/tools-2375/logo.svg"
             alt="Logo"
@@ -430,31 +501,39 @@
     </section>
 
     <div class="controls">
-      <label for="speedControl" class="sr-only">Ventilatorstand</label>
+      <label class="sr-only" for="speedControl">Ventilatorstand</label>
       <input
         id="speedControl"
         type="range"
-        min="0"
-        max="3"
+        min="1"
+        max="10"
         step="1"
-        value="0"
+        value="5"
       />
     </div>
   </main>
 
   <script>
     const speedControl = document.getElementById("speedControl");
+    const root = document.documentElement;
 
-    function setSpeed(speed) {
-      document.body.classList.remove("speed-0", "speed-1", "speed-2", "speed-3");
-      document.body.classList.add(`speed-${speed}`);
+    function setFanSpeed(value) {
+      const speed = Number(value);
+
+      const fanDuration = 1.7 - speed * 0.145;
+      const windDuration = 1.8 - speed * 0.105;
+      const windOpacity = 0.35 + speed * 0.065;
+
+      root.style.setProperty("--fan-speed", `${fanDuration.toFixed(3)}s`);
+      root.style.setProperty("--wind-speed", `${windDuration.toFixed(3)}s`);
+      root.style.setProperty("--wind-opacity", windOpacity.toFixed(2));
     }
 
     speedControl.addEventListener("input", function () {
-      setSpeed(this.value);
+      setFanSpeed(this.value);
     });
 
-    setSpeed(speedControl.value);
+    setFanSpeed(speedControl.value);
   </script>
 </body>
 </html>
