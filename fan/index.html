@@ -14,6 +14,7 @@
       --blue-main: #38aee5;
       --blue-dark: #0f79b8;
       --shadow: rgba(15, 121, 184, 0.25);
+
       --fan-speed: 0.85s;
       --fan-play-state: running;
       --wind-speed: 1.2s;
@@ -67,7 +68,7 @@
       z-index: 1;
       pointer-events: none;
       opacity: var(--wind-opacity);
-      transition: opacity 180ms ease;
+      transition: opacity 450ms ease;
     }
 
     .wind-line {
@@ -83,6 +84,7 @@
       );
       filter: blur(0.15px);
       animation: windLineMove var(--wind-speed) linear infinite;
+      animation-play-state: var(--fan-play-state);
       opacity: 0;
     }
 
@@ -136,6 +138,7 @@
       border-radius: 50%;
       background: rgba(56, 174, 229, 0.34);
       animation: windDotMove calc(var(--wind-speed) * 1.15) linear infinite;
+      animation-play-state: var(--fan-play-state);
       opacity: 0;
     }
 
@@ -335,6 +338,17 @@
       box-shadow:
         inset 0 -5px 10px rgba(15, 121, 184, 0.08),
         0 8px 18px rgba(15, 121, 184, 0.16);
+      transition:
+        opacity 250ms ease,
+        transform 250ms ease,
+        box-shadow 250ms ease;
+    }
+
+    .sound-button:hover {
+      transform: translateY(-1px);
+      box-shadow:
+        inset 0 -5px 10px rgba(15, 121, 184, 0.08),
+        0 11px 22px rgba(15, 121, 184, 0.2);
     }
 
     .sound-button.is-muted {
@@ -575,29 +589,41 @@
     let humGain = null;
     let lfoOscillator = null;
     let lfoGain = null;
+
     let soundStarted = false;
     let isMuted = false;
-    let currentSpeed = Number(speedControl.value);
 
-    function setFanVisualSpeed(value) {
-      const speed = Number(value);
+    let targetSpeed = Number(speedControl.value);
+    let smoothSpeed = targetSpeed;
+    let animationFrameId = null;
 
-      if (speed === 0) {
+    function clamp(value, min, max) {
+      return Math.min(Math.max(value, min), max);
+    }
+
+    function lerp(current, target, amount) {
+      return current + (target - current) * amount;
+    }
+
+    function setFanVisualSpeed(speed) {
+      const safeSpeed = clamp(speed, 0, 10);
+
+      if (safeSpeed <= 0.025) {
         root.style.setProperty("--fan-play-state", "paused");
         root.style.setProperty("--wind-opacity", "0");
-        root.style.setProperty("--fan-speed", "1.7s");
-        root.style.setProperty("--wind-speed", "1.8s");
+        root.style.setProperty("--fan-speed", "2.4s");
+        root.style.setProperty("--wind-speed", "2.3s");
         return;
       }
 
-      const fanDuration = 1.7 - speed * 0.145;
-      const windDuration = 1.8 - speed * 0.105;
-      const windOpacity = 0.35 + speed * 0.065;
+      const fanDuration = 2.4 - safeSpeed * 0.205;
+      const windDuration = 2.3 - safeSpeed * 0.12;
+      const windOpacity = 0.18 + safeSpeed * 0.077;
 
       root.style.setProperty("--fan-play-state", "running");
       root.style.setProperty("--fan-speed", `${fanDuration.toFixed(3)}s`);
       root.style.setProperty("--wind-speed", `${windDuration.toFixed(3)}s`);
-      root.style.setProperty("--wind-opacity", windOpacity.toFixed(2));
+      root.style.setProperty("--wind-opacity", windOpacity.toFixed(3));
     }
 
     function createNoiseBuffer(context) {
@@ -686,11 +712,11 @@
       lfoOscillator.start();
 
       soundStarted = true;
-      updateFanSound(currentSpeed);
+      updateFanSound(smoothSpeed);
     }
 
-    function updateFanSound(value) {
-      currentSpeed = Number(value);
+    function updateFanSound(speed) {
+      const safeSpeed = clamp(speed, 0, 10);
 
       if (
         !audioContext ||
@@ -706,58 +732,77 @@
       }
 
       const now = audioContext.currentTime;
+      const isStopped = safeSpeed <= 0.025;
 
-      const isStopped = currentSpeed === 0;
-      const targetVolume = isStopped || isMuted ? 0 : 0.08 + currentSpeed * 0.018;
-      const targetNoiseFrequency = 420 + currentSpeed * 135;
-      const targetPlaybackRate = currentSpeed === 0 ? 0.75 : 0.75 + currentSpeed * 0.09;
-      const targetHumFrequency = 54 + currentSpeed * 7;
-      const targetHumGain = isStopped || isMuted ? 0 : 0.012 + currentSpeed * 0.004;
-      const targetLfoFrequency = 2.1 + currentSpeed * 0.38;
-      const targetLfoGain = isStopped || isMuted ? 0 : 0.018 + currentSpeed * 0.004;
+      const targetVolume = isStopped || isMuted ? 0 : 0.065 + safeSpeed * 0.019;
+      const targetNoiseFrequency = 380 + safeSpeed * 145;
+      const targetPlaybackRate = 0.7 + safeSpeed * 0.095;
+      const targetHumFrequency = 48 + safeSpeed * 7.5;
+      const targetHumGain = isStopped || isMuted ? 0 : 0.01 + safeSpeed * 0.004;
+      const targetLfoFrequency = 1.8 + safeSpeed * 0.42;
+      const targetLfoGain = isStopped || isMuted ? 0 : 0.014 + safeSpeed * 0.0045;
 
       masterGain.gain.cancelScheduledValues(now);
-      masterGain.gain.setTargetAtTime(targetVolume, now, 0.08);
+      masterGain.gain.setTargetAtTime(targetVolume, now, 0.14);
 
       noiseFilter.frequency.cancelScheduledValues(now);
-      noiseFilter.frequency.setTargetAtTime(targetNoiseFrequency, now, 0.08);
+      noiseFilter.frequency.setTargetAtTime(targetNoiseFrequency, now, 0.16);
 
       noiseSource.playbackRate.cancelScheduledValues(now);
-      noiseSource.playbackRate.setTargetAtTime(targetPlaybackRate, now, 0.08);
+      noiseSource.playbackRate.setTargetAtTime(targetPlaybackRate, now, 0.16);
 
       humOscillator.frequency.cancelScheduledValues(now);
-      humOscillator.frequency.setTargetAtTime(targetHumFrequency, now, 0.08);
+      humOscillator.frequency.setTargetAtTime(targetHumFrequency, now, 0.16);
 
       humGain.gain.cancelScheduledValues(now);
-      humGain.gain.setTargetAtTime(targetHumGain, now, 0.08);
+      humGain.gain.setTargetAtTime(targetHumGain, now, 0.14);
 
       lfoOscillator.frequency.cancelScheduledValues(now);
-      lfoOscillator.frequency.setTargetAtTime(targetLfoFrequency, now, 0.08);
+      lfoOscillator.frequency.setTargetAtTime(targetLfoFrequency, now, 0.16);
 
       lfoGain.gain.cancelScheduledValues(now);
-      lfoGain.gain.setTargetAtTime(targetLfoGain, now, 0.08);
+      lfoGain.gain.setTargetAtTime(targetLfoGain, now, 0.14);
+    }
+
+    function smoothAnimationLoop() {
+      smoothSpeed = lerp(smoothSpeed, targetSpeed, 0.075);
+
+      if (Math.abs(smoothSpeed - targetSpeed) < 0.015) {
+        smoothSpeed = targetSpeed;
+      }
+
+      setFanVisualSpeed(smoothSpeed);
+      updateFanSound(smoothSpeed);
+
+      animationFrameId = requestAnimationFrame(smoothAnimationLoop);
+    }
+
+    function setTargetSpeed(value) {
+      targetSpeed = clamp(Number(value), 0, 10);
+    }
+
+    function updateSoundButton() {
+      soundButton.classList.toggle("is-muted", isMuted);
+      soundButton.textContent = isMuted ? "🔇" : "🔊";
     }
 
     function toggleSound() {
-      startFanSound();
+      if (!soundStarted) {
+        startFanSound();
+        isMuted = false;
+        updateSoundButton();
+        updateFanSound(smoothSpeed);
+        return;
+      }
 
       isMuted = !isMuted;
-
-      soundButton.classList.toggle("is-muted", isMuted);
-      soundButton.textContent = isMuted ? "🔇" : "🔊";
-
-      updateFanSound(currentSpeed);
-    }
-
-    function handleSpeedChange(value) {
-      currentSpeed = Number(value);
-      setFanVisualSpeed(currentSpeed);
-      updateFanSound(currentSpeed);
+      updateSoundButton();
+      updateFanSound(smoothSpeed);
     }
 
     speedControl.addEventListener("input", function () {
       startFanSound();
-      handleSpeedChange(this.value);
+      setTargetSpeed(this.value);
     });
 
     speedControl.addEventListener("pointerdown", function () {
@@ -782,7 +827,12 @@
       { once: true }
     );
 
-    setFanVisualSpeed(currentSpeed);
+    setFanVisualSpeed(smoothSpeed);
+    updateSoundButton();
+
+    if (!animationFrameId) {
+      smoothAnimationLoop();
+    }
   </script>
 </body>
 </html>
