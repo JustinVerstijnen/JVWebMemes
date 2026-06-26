@@ -288,19 +288,41 @@
     }
 
     .controls {
-      width: min(360px, 82vw);
-      padding: 18px 22px;
+      width: min(380px, 86vw);
+      padding: 14px 18px;
       border-radius: 999px;
       background: rgba(255,255,255,0.62);
       border: 1px solid rgba(255,255,255,0.85);
       backdrop-filter: blur(14px);
       box-shadow: 0 18px 45px rgba(15, 121, 184, 0.16);
+      display: flex;
+      align-items: center;
+      gap: 14px;
     }
 
     input[type="range"] {
       width: 100%;
       cursor: pointer;
       accent-color: var(--blue-dark);
+    }
+
+    .sound-button {
+      flex: 0 0 auto;
+      width: 44px;
+      height: 44px;
+      border: 0;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #ffffff, #c9effc);
+      color: var(--blue-dark);
+      cursor: pointer;
+      font-size: 19px;
+      box-shadow:
+        inset 0 -5px 10px rgba(15, 121, 184, 0.08),
+        0 8px 18px rgba(15, 121, 184, 0.16);
+    }
+
+    .sound-button.is-muted {
+      opacity: 0.55;
     }
 
     .sr-only {
@@ -501,6 +523,16 @@
     </section>
 
     <div class="controls">
+      <button
+        id="soundButton"
+        class="sound-button"
+        type="button"
+        aria-label="Geluid aan of uit"
+        title="Geluid aan/uit"
+      >
+        🔊
+      </button>
+
       <label class="sr-only" for="speedControl">Ventilatorstand</label>
       <input
         id="speedControl"
@@ -515,9 +547,22 @@
 
   <script>
     const speedControl = document.getElementById("speedControl");
+    const soundButton = document.getElementById("soundButton");
     const root = document.documentElement;
 
-    function setFanSpeed(value) {
+    let audioContext = null;
+    let masterGain = null;
+    let noiseSource = null;
+    let noiseFilter = null;
+    let humOscillator = null;
+    let humGain = null;
+    let lfoOscillator = null;
+    let lfoGain = null;
+    let soundStarted = false;
+    let isMuted = false;
+    let currentSpeed = Number(speedControl.value);
+
+    function setFanVisualSpeed(value) {
       const speed = Number(value);
 
       const fanDuration = 1.7 - speed * 0.145;
@@ -529,11 +574,178 @@
       root.style.setProperty("--wind-opacity", windOpacity.toFixed(2));
     }
 
+    function createNoiseBuffer(context) {
+      const bufferLength = context.sampleRate * 4;
+      const buffer = context.createBuffer(1, bufferLength, context.sampleRate);
+      const data = buffer.getChannelData(0);
+
+      let lastValue = 0;
+
+      for (let i = 0; i < bufferLength; i++) {
+        const white = Math.random() * 2 - 1;
+
+        lastValue = lastValue * 0.92 + white * 0.08;
+
+        data[i] = lastValue * 0.9;
+      }
+
+      return buffer;
+    }
+
+    function startFanSound() {
+      if (soundStarted) {
+        if (audioContext && audioContext.state === "suspended") {
+          audioContext.resume();
+        }
+
+        return;
+      }
+
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+      masterGain = audioContext.createGain();
+      masterGain.gain.value = 0;
+
+      noiseFilter = audioContext.createBiquadFilter();
+      noiseFilter.type = "lowpass";
+      noiseFilter.frequency.value = 750;
+      noiseFilter.Q.value = 0.8;
+
+      const secondaryFilter = audioContext.createBiquadFilter();
+      secondaryFilter.type = "highpass";
+      secondaryFilter.frequency.value = 65;
+      secondaryFilter.Q.value = 0.7;
+
+      noiseSource = audioContext.createBufferSource();
+      noiseSource.buffer = createNoiseBuffer(audioContext);
+      noiseSource.loop = true;
+      noiseSource.playbackRate.value = 1;
+
+      humOscillator = audioContext.createOscillator();
+      humOscillator.type = "sine";
+      humOscillator.frequency.value = 72;
+
+      humGain = audioContext.createGain();
+      humGain.gain.value = 0.025;
+
+      lfoOscillator = audioContext.createOscillator();
+      lfoOscillator.type = "sine";
+      lfoOscillator.frequency.value = 3.5;
+
+      lfoGain = audioContext.createGain();
+      lfoGain.gain.value = 0.045;
+
+      const compressor = audioContext.createDynamicsCompressor();
+      compressor.threshold.value = -24;
+      compressor.knee.value = 22;
+      compressor.ratio.value = 6;
+      compressor.attack.value = 0.01;
+      compressor.release.value = 0.25;
+
+      noiseSource
+        .connect(secondaryFilter)
+        .connect(noiseFilter)
+        .connect(compressor)
+        .connect(masterGain)
+        .connect(audioContext.destination);
+
+      humOscillator
+        .connect(humGain)
+        .connect(masterGain);
+
+      lfoOscillator
+        .connect(lfoGain)
+        .connect(masterGain.gain);
+
+      noiseSource.start();
+      humOscillator.start();
+      lfoOscillator.start();
+
+      soundStarted = true;
+
+      updateFanSound(currentSpeed);
+    }
+
+    function updateFanSound(value) {
+      currentSpeed = Number(value);
+
+      if (!audioContext || !masterGain || !noiseSource || !noiseFilter || !humOscillator || !humGain || !lfoOscillator || !lfoGain) {
+        return;
+      }
+
+      const now = audioContext.currentTime;
+
+      const targetVolume = isMuted ? 0 : 0.08 + currentSpeed * 0.018;
+      const targetNoiseFrequency = 420 + currentSpeed * 135;
+      const targetPlaybackRate = 0.75 + currentSpeed * 0.09;
+      const targetHumFrequency = 54 + currentSpeed * 7;
+      const targetHumGain = isMuted ? 0 : 0.012 + currentSpeed * 0.004;
+      const targetLfoFrequency = 2.1 + currentSpeed * 0.38;
+      const targetLfoGain = isMuted ? 0 : 0.018 + currentSpeed * 0.004;
+
+      masterGain.gain.cancelScheduledValues(now);
+      masterGain.gain.setTargetAtTime(targetVolume, now, 0.08);
+
+      noiseFilter.frequency.cancelScheduledValues(now);
+      noiseFilter.frequency.setTargetAtTime(targetNoiseFrequency, now, 0.08);
+
+      noiseSource.playbackRate.cancelScheduledValues(now);
+      noiseSource.playbackRate.setTargetAtTime(targetPlaybackRate, now, 0.08);
+
+      humOscillator.frequency.cancelScheduledValues(now);
+      humOscillator.frequency.setTargetAtTime(targetHumFrequency, now, 0.08);
+
+      humGain.gain.cancelScheduledValues(now);
+      humGain.gain.setTargetAtTime(targetHumGain, now, 0.08);
+
+      lfoOscillator.frequency.cancelScheduledValues(now);
+      lfoOscillator.frequency.setTargetAtTime(targetLfoFrequency, now, 0.08);
+
+      lfoGain.gain.cancelScheduledValues(now);
+      lfoGain.gain.setTargetAtTime(targetLfoGain, now, 0.08);
+    }
+
+    function toggleSound() {
+      startFanSound();
+
+      isMuted = !isMuted;
+
+      soundButton.classList.toggle("is-muted", isMuted);
+      soundButton.textContent = isMuted ? "🔇" : "🔊";
+
+      updateFanSound(currentSpeed);
+    }
+
+    function handleSpeedChange(value) {
+      currentSpeed = Number(value);
+      setFanVisualSpeed(currentSpeed);
+      updateFanSound(currentSpeed);
+    }
+
     speedControl.addEventListener("input", function () {
-      setFanSpeed(this.value);
+      startFanSound();
+      handleSpeedChange(this.value);
     });
 
-    setFanSpeed(speedControl.value);
+    speedControl.addEventListener("pointerdown", function () {
+      startFanSound();
+    });
+
+    speedControl.addEventListener("keydown", function () {
+      startFanSound();
+    });
+
+    soundButton.addEventListener("click", function () {
+      toggleSound();
+    });
+
+    document.addEventListener("click", function () {
+      if (!soundStarted) {
+        startFanSound();
+      }
+    }, { once: true });
+
+    setFanVisualSpeed(currentSpeed);
   </script>
 </body>
 </html>
