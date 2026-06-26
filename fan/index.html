@@ -232,8 +232,8 @@
       position: absolute;
       top: 50%;
       left: 50%;
-      width: 116px;
-      height: 116px;
+      width: 122px;
+      height: 122px;
       transform: translate(-50%, -50%);
       border-radius: 50%;
       background:
@@ -246,6 +246,8 @@
       align-items: center;
       justify-content: center;
       z-index: 10;
+      animation: centerSpin var(--fan-speed) linear infinite;
+      will-change: transform;
     }
 
     .center-logo img {
@@ -255,6 +257,16 @@
       display: block;
       user-select: none;
       pointer-events: none;
+    }
+
+    @keyframes centerSpin {
+      from {
+        transform: translate(-50%, -50%) rotate(0deg);
+      }
+
+      to {
+        transform: translate(-50%, -50%) rotate(360deg);
+      }
     }
 
     .stand {
@@ -353,8 +365,8 @@
       }
 
       .center-logo {
-        width: 96px;
-        height: 96px;
+        width: 100px;
+        height: 100px;
       }
 
       .wind-line {
@@ -364,6 +376,7 @@
 
     @media (prefers-reduced-motion: reduce) {
       .fan-rotor,
+      .center-logo,
       .wind-line,
       .wind-dot {
         animation: none !important;
@@ -444,35 +457,36 @@
           />
 
           <g class="fan-rotor">
+            <!-- grotere bladen -->
             <path
-              d="M250 250 C292 198, 366 174, 397 210 C420 237, 395 276, 344 286 C304 294, 274 280, 250 250 Z"
+              d="M250 250 C302 184, 392 160, 432 206 C458 236, 431 291, 365 303 C313 313, 276 292, 250 250 Z"
               fill="url(#bladeGradient)"
-              opacity="0.94"
+              opacity="0.95"
             />
 
             <path
-              d="M250 250 C302 292, 326 366, 290 397 C263 420, 224 395, 214 344 C206 304, 220 274, 250 250 Z"
+              d="M250 250 C316 302, 340 392, 294 432 C264 458, 209 431, 197 365 C187 313, 208 276, 250 250 Z"
               fill="url(#bladeGradient)"
-              opacity="0.94"
+              opacity="0.95"
             />
 
             <path
-              d="M250 250 C208 302, 134 326, 103 290 C80 263, 105 224, 156 214 C196 206, 226 220, 250 250 Z"
+              d="M250 250 C198 316, 108 340, 68 294 C42 264, 69 209, 135 197 C187 187, 224 208, 250 250 Z"
               fill="url(#bladeGradient)"
-              opacity="0.94"
+              opacity="0.95"
             />
 
             <path
-              d="M250 250 C198 208, 174 134, 210 103 C237 80, 276 105, 286 156 C294 196, 280 226, 250 250 Z"
+              d="M250 250 C184 198, 160 108, 206 68 C236 42, 291 69, 303 135 C313 187, 292 224, 250 250 Z"
               fill="url(#bladeGradient)"
-              opacity="0.94"
+              opacity="0.95"
             />
 
             <circle
               cx="250"
               cy="250"
-              r="42"
-              fill="rgba(255,255,255,0.35)"
+              r="48"
+              fill="rgba(255,255,255,0.28)"
             />
           </g>
 
@@ -583,9 +597,7 @@
 
       for (let i = 0; i < bufferLength; i++) {
         const white = Math.random() * 2 - 1;
-
         lastValue = lastValue * 0.92 + white * 0.08;
-
         data[i] = lastValue * 0.9;
       }
 
@@ -597,7 +609,6 @@
         if (audioContext && audioContext.state === "suspended") {
           audioContext.resume();
         }
-
         return;
       }
 
@@ -662,14 +673,22 @@
       lfoOscillator.start();
 
       soundStarted = true;
-
       updateFanSound(currentSpeed);
     }
 
     function updateFanSound(value) {
       currentSpeed = Number(value);
 
-      if (!audioContext || !masterGain || !noiseSource || !noiseFilter || !humOscillator || !humGain || !lfoOscillator || !lfoGain) {
+      if (
+        !audioContext ||
+        !masterGain ||
+        !noiseSource ||
+        !noiseFilter ||
+        !humOscillator ||
+        !humGain ||
+        !lfoOscillator ||
+        !lfoGain
+      ) {
         return;
       }
 
@@ -739,11 +758,15 @@
       toggleSound();
     });
 
-    document.addEventListener("click", function () {
-      if (!soundStarted) {
-        startFanSound();
-      }
-    }, { once: true });
+    document.addEventListener(
+      "click",
+      function () {
+        if (!soundStarted) {
+          startFanSound();
+        }
+      },
+      { once: true }
+    );
 
     setFanVisualSpeed(currentSpeed);
   </script>
