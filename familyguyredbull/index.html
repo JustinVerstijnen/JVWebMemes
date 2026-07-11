@@ -1,1 +1,42 @@
-1
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Tasty stuff - justinverstijnen.nl</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: black;
+      cursor: pointer;
+    }
+    .fullscreen-gif {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover; 
+      z-index: 9999;
+    }
+  </style>
+  <script defer src="https://cloud.umami.is/script.js" data-website-id="0b9a2780-4e9b-4e14-93d9-97d0e64d6ccb"></script>
+</head>
+<body onclick="startSound()">
+  <img src="familiyguyredbull.gif" alt="FamilyGuyRedBull" class="fullscreen-gif">
+
+  <audio id="beerAudio" loop>
+    <source src="familiyguyredbull.mp3" type="audio/mpeg">
+    Your browser does not support audio. Sadly, no Red Bull for you.
+  </audio>
+
+  <script>
+    function startSound() {
+      const audio = document.getElementById('beerAudio');
+      audio.play();
+      document.body.onclick = null;
+    }
+  </script>
+</body>
+</html>
