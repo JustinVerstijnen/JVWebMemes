@@ -24,7 +24,7 @@ const items = [
     "title": "Monster Energy Tier List",
     "description": "Rank Monster Energy flavours in a tier list interface.",
     "url": "https://monstertier.justinverstijnen.nl/",
-    "image": "monsterenergytierlist/assets/monster_25.png",
+    "image": "monsterenergytierlist/monstertier.png",
     "icon": "⚡"
   },
   {
